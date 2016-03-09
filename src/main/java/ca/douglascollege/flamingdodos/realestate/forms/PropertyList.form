@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="ca.douglascollege.flamingdodos.realestate.forms.PropertyList">
+  <grid id="27dc6" binding="contentPane" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="585" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="425aa" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="2" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="1e179" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="e2aac" class="javax.swing.JButton" binding="newButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="New"/>
+                </properties>
+              </component>
+              <component id="8d613" class="javax.swing.JButton" binding="editButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Edit"/>
+                </properties>
+              </component>
+              <component id="29572" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Delete"/>
+                </properties>
+              </component>
+              <component id="b9226" class="javax.swing.JButton" binding="buyerStatementButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Buyer Statement"/>
+                </properties>
+              </component>
+              <component id="f12f5" class="javax.swing.JButton" binding="sellerStatementButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Seller Statement"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <hspacer id="f9caa">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+          <component id="50a1" class="javax.swing.JButton" binding="closeButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Close"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="2448f" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="dc393" class="javax.swing.JList" binding="list1" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="8" fill="2" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="50"/>
+              </grid>
+            </constraints>
+            <properties>
+              <model>
+                <item value="Ocean View 1"/>
+                <item value="Ocean View 2"/>
+                <item value="Suburb 1"/>
+                <item value="Suburb 2"/>
+                <item value="Property 5"/>
+                <item value="Property 6"/>
+                <item value="Property 7"/>
+                <item value="Property 8"/>
+                <item value="Property 9"/>
+                <item value="Property 10"/>
+              </model>
+            </properties>
+          </component>
+          <grid id="d7cf6" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="6" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="89b6" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="2104a" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Property Name:"/>
+                    </properties>
+                  </component>
+                  <component id="c2ca7" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="{PROPERTY_NAME}"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="a029d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="b288e" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Property Type"/>
+                    </properties>
+                  </component>
+                  <component id="459e9" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="{PROPERTY_TYPE}"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="4955f" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="d0cf6" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Listing Price:"/>
+                    </properties>
+                  </component>
+                  <component id="9cdd" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="{LISTING_PRICE}"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>
