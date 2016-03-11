@@ -1,10 +1,15 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
 import ca.douglascollege.flamingdodos.realestate.data.models.BaseModel;
+import ca.douglascollege.flamingdodos.realestate.data.models.SimpleModel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.tmatesoft.sqljet.core.SqlJetException;
+import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
+
+import java.util.Map;
 
 import static org.junit.Assert.*;
 

@@ -25,11 +25,17 @@ public abstract class BaseService<T extends BaseModel> {
     }
 
     public T lookup(long rowId) throws SqlJetException {
-        return (T) mDatabase.runReadTransaction(new LookupTransaction(rowId));
+        @SuppressWarnings("unchecked")
+        T model = (T) mDatabase.runReadTransaction(new LookupTransaction(rowId));
+
+        return model;
     }
 
     public T[] getAll() throws SqlJetException {
-        return (T[]) mDatabase.runReadTransaction(new GetAllTransaction());
+        @SuppressWarnings("unchecked")
+        T[] models = (T[]) mDatabase.runReadTransaction(new GetAllTransaction());
+
+        return models;
     }
 
     public boolean delete(T model) throws SqlJetException {
@@ -37,11 +43,12 @@ public abstract class BaseService<T extends BaseModel> {
     }
 
     public T newModel() throws SqlJetException {
-        T model = null;
+        T model;
         try {
             model = mModelClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            // this would only happen if the
+            // this would only happen if the model subclass has a non-public default constructor
+            throw new AssertionError(mModelClass.getSimpleName() + " has a non-public default constructor", e);
         }
 
         return model;

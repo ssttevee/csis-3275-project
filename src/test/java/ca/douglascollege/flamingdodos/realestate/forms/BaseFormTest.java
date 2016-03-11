@@ -3,10 +3,17 @@ package ca.douglascollege.flamingdodos.realestate.forms;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import javax.swing.*;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
+@RunWith(Theories.class)
 public abstract class BaseFormTest<T extends BaseForm> {
     private T mForm;
 
@@ -23,18 +30,24 @@ public abstract class BaseFormTest<T extends BaseForm> {
         mForm.close();
     }
 
-    @Test
-    public void testButtons() throws Exception {
-        for (Field f : getClass().getDeclaredFields()) {
+    @Theory
+    public void testButtons(Field f) throws Exception {
+        JButton button = (JButton) f.get(mForm);
+        button.doClick();
+    }
+
+    public static void addFieldsFromClass(Class<?> cls) {
+        List<Field> fields = new ArrayList<>();
+        for (Field f : cls.getDeclaredFields()) {
             if (f.getType().isAssignableFrom(JButton.class)) {
-
                 f.setAccessible(true);
-
-                setUp();
-                JButton button = (JButton) f.get(mForm);
-                button.doClick();
-                tearDown();
+                fields.add(f);
             }
         }
+
+        buttons = fields.toArray(new Field[fields.size()]);
     }
+
+    @DataPoints
+    public static Field[] buttons;
 }

@@ -1,6 +1,7 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
 import ca.douglascollege.flamingdodos.realestate.data.models.Agent;
+import org.junit.Test;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 import static org.junit.Assert.assertEquals;

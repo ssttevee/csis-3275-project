@@ -54,7 +54,7 @@ public class SimpleModel extends BaseModel {
                 dataMap.put(CaseTools.camelToSnake(f.getName()), f.get(this));
             } catch (IllegalAccessException e) {
                 // This should never happen
-                // TODO handle this exception...
+                throw new AssertionError("Got an inaccessible field", e);
             }
         }
 
@@ -68,10 +68,9 @@ public class SimpleModel extends BaseModel {
                 f.set(this, readCursor.getValue(CaseTools.camelToSnake(f.getName())));
             } catch (IllegalAccessException e) {
                 // This should never happen
-                // TODO handle this exception...
+                throw new AssertionError("Got an inaccessible field", e);
             }
         }
-
     }
 
     private Field[] getFields() {
