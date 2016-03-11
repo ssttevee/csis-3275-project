@@ -9,4 +9,4 @@ before_script:
   - sleep 3 # give xvfb some time to start
 
 after_success:
-  - gradlew jacocoTestReport coveralls
+  - ./gradlew jacocoTestReport coveralls
