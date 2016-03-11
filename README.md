@@ -1,1 +1,2 @@
 # csis-3275-real-estate-project
+[![Build Status](https://travis-ci.org/ssttevee/csis-3275-real-estate-project.svg?branch=develop)](https://travis-ci.org/ssttevee/csis-3275-real-estate-project) [![Coverage Status](https://coveralls.io/repos/github/ssttevee/csis-3275-real-estate-project/badge.svg?branch=develop)](https://coveralls.io/github/ssttevee/csis-3275-real-estate-project?branch=develop)
