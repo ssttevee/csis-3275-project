@@ -1,6 +1,6 @@
-package ca.douglascollege.flamingdodos.realestate.data.services;
+package ca.douglascollege.flamingdodos.database.services;
 
-import ca.douglascollege.flamingdodos.realestate.data.models.BaseModel;
+import ca.douglascollege.flamingdodos.database.models.BaseModel;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTable;
@@ -11,6 +11,9 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public abstract class BaseService<T extends BaseModel> {
     private SqlJetDb mDatabase;
     private Class<T> mModelClass;

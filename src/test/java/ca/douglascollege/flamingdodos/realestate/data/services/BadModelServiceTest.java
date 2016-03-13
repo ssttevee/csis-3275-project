@@ -1,7 +1,7 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
-import ca.douglascollege.flamingdodos.realestate.data.models.BaseModel;
-import ca.douglascollege.flamingdodos.realestate.data.models.SimpleModel;
+import ca.douglascollege.flamingdodos.database.models.SimpleModel;
+import ca.douglascollege.flamingdodos.database.services.BaseService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

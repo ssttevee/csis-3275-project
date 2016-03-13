@@ -1,22 +1,22 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
-import ca.douglascollege.flamingdodos.realestate.data.models.Agent;
-import org.junit.Test;
+import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 import static org.junit.Assert.assertEquals;
 
-public class AgentServiceTest extends BaseServiceTest<Agent> {
+public class AgentModelServiceTest extends BaseServiceTest<AgentModel> {
     public static final String TEST_DATA_FIRST_NAME = "Victor";
     public static final String TEST_DATA_LAST_NAME = "Choong";
 
     @Override
-    protected BaseService<Agent> createService(SqlJetDb db) {
+    protected BaseService<AgentModel> createService(SqlJetDb db) {
         return new AgentService(db);
     }
 
     @Override
-    protected Agent populateModelWithEvaulatableData(Agent agent) {
+    protected AgentModel populateModelWithEvaulatableData(AgentModel agent) {
         agent.firstName = TEST_DATA_FIRST_NAME;
         agent.lastName = TEST_DATA_LAST_NAME;
 
@@ -24,7 +24,7 @@ public class AgentServiceTest extends BaseServiceTest<Agent> {
     }
 
     @Override
-    protected Agent populateModelWithPhonyData(Agent agent) {
+    protected AgentModel populateModelWithPhonyData(AgentModel agent) {
         agent.firstName = "Phony";
         agent.lastName = "Data";
 
@@ -32,7 +32,7 @@ public class AgentServiceTest extends BaseServiceTest<Agent> {
     }
 
     @Override
-    protected void evaluateModelData(Agent agent) throws Exception {
+    protected void evaluateModelData(AgentModel agent) throws Exception {
         assertEquals(TEST_DATA_FIRST_NAME, agent.firstName);
         assertEquals(TEST_DATA_LAST_NAME, agent.lastName);
     }

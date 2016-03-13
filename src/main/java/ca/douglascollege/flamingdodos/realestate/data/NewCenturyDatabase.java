@@ -1,8 +1,8 @@
 package ca.douglascollege.flamingdodos.realestate.data;
 
-import ca.douglascollege.flamingdodos.realestate.data.models.Agent;
+import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.services.AgentService;
-import ca.douglascollege.flamingdodos.realestate.data.services.BaseService;
+import ca.douglascollege.flamingdodos.database.services.BaseService;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
@@ -19,7 +19,7 @@ public class NewCenturyDatabase {
         mDatabase = SqlJetDb.open(file, true);
     }
 
-    public BaseService<Agent> getAgentService() {
+    public BaseService<AgentModel> getAgentService() {
         return new AgentService(mDatabase);
     }
 

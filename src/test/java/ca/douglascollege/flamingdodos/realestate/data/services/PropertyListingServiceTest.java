@@ -1,34 +1,33 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
-import ca.douglascollege.flamingdodos.realestate.data.models.Agent;
-import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListing;
-import org.junit.Test;
+import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 import static org.junit.Assert.assertEquals;
 
-public class PropertyListingServiceTest extends BaseServiceTest<PropertyListing> {
+public class PropertyListingServiceTest extends BaseServiceTest<PropertyListingModel> {
     @Override
-    protected BaseService<PropertyListing> createService(SqlJetDb db) {
+    protected BaseService<PropertyListingModel> createService(SqlJetDb db) {
         return new PropertyListingService(db);
     }
 
     @Override
-    protected PropertyListing populateModelWithEvaulatableData(PropertyListing model) {
+    protected PropertyListingModel populateModelWithEvaulatableData(PropertyListingModel model) {
         model.agentId = 1;
 
         return model;
     }
 
     @Override
-    protected PropertyListing populateModelWithPhonyData(PropertyListing model) {
+    protected PropertyListingModel populateModelWithPhonyData(PropertyListingModel model) {
         model.agentId = 2;
 
         return model;
     }
 
     @Override
-    protected void evaluateModelData(PropertyListing model) throws Exception {
+    protected void evaluateModelData(PropertyListingModel model) throws Exception {
         assertEquals(1, model.agentId);
     }
 }
