@@ -8,7 +8,9 @@ import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,13 +67,15 @@ public abstract class SimpleModel extends BaseModel {
 
     @Override
     protected String getCreateTableStatement() {
-        String createStmt = "CREATE TABLE " + mTableName + "(";
+        String createStmt = "CREATE TABLE \"" + mTableName + "\" (";
+
+        Map<String, SqliteForeignKey> fks = new HashMap<>();
 
         for (Field f : getFields()) {
             String name = CaseTools.camelToSnake(f.getName());
 
             SqliteColumn column = f.getAnnotation(SqliteColumn.class);
-            createStmt += name + " `" + column.value().getName() + "`";
+            createStmt += "\"" + name + "\" " + column.value().getName();
 
             if (column.primaryKey()) createStmt += " PRIMARY KEY";
 
@@ -79,19 +83,25 @@ public abstract class SimpleModel extends BaseModel {
 
             SqliteForeignKey foreignKey = f.getAnnotation(SqliteForeignKey.class);
             if (foreignKey != null) {
+                fks.put(name, foreignKey);
+            }
+        }
 
-                try {
-                    createStmt += " FOREIGN KEY(" + column.value() + ") REFERENCES " +
-                            foreignKey.table().newInstance().getTableName() + "(" + foreignKey.column() + "),";
-                } catch (InstantiationException e) {
-                    if (Modifier.isAbstract(foreignKey.table().getModifiers())) {
-                        throw new AssertionError("Foreign Key model class must not be abstract", e);
-                    }
+        for (Map.Entry<String, SqliteForeignKey> entry : fks.entrySet()) {
+            String name = entry.getKey();
+            SqliteForeignKey foreignKey = entry.getValue();
 
-                    throw new AssertionError(foreignKey.table().getName() + " does not have a nullary constructor", e);
-                } catch (IllegalAccessException e) {
-                    throw new AssertionError(foreignKey.table().getName() + " nullary constructor is inaccessible", e);
+            try {
+                createStmt += " FOREIGN KEY(\"" + name + "\") REFERENCES " +
+                        "\"" + foreignKey.table().newInstance().getTableName() + "\" (\"" + foreignKey.column() + "\"),";
+            } catch (InstantiationException e) {
+                if (Modifier.isAbstract(foreignKey.table().getModifiers())) {
+                    throw new AssertionError("Foreign Key model class must not be abstract", e);
                 }
+
+                throw new AssertionError(foreignKey.table().getName() + " does not have a nullary constructor", e);
+            } catch (IllegalAccessException e) {
+                throw new AssertionError(foreignKey.table().getName() + " nullary constructor is inaccessible", e);
             }
         }
 
@@ -104,7 +114,14 @@ public abstract class SimpleModel extends BaseModel {
 
         for (Field f : getFields()) {
             try {
-                dataMap.put(CaseTools.camelToSnake(f.getName()), f.get(this));
+                Object value = f.get(this);
+                if (f.getType().isEnum()) {
+                    value = value.toString();
+                } else if (f.getType() == Date.class) {
+                    value = ((Date) value).getTime();
+                }
+
+                dataMap.put(CaseTools.camelToSnake(f.getName()), value);
             } catch (IllegalAccessException e) {
                 // This should never happen
                 throw new AssertionError("Got an inaccessible field", e);
@@ -118,10 +135,24 @@ public abstract class SimpleModel extends BaseModel {
     protected void fromCursor(ISqlJetCursor readCursor) throws SqlJetException {
         for (Field f : getFields()) {
             try {
-                f.set(this, readCursor.getValue(CaseTools.camelToSnake(f.getName())));
+                Object colValue = readCursor.getValue(CaseTools.camelToSnake(f.getName()));
+
+                if (f.getType().isEnum()) {
+                    colValue = (f.getType()).getMethod("valueOf", String.class).invoke(null, (String) colValue);
+                } else if (f.getType() == Date.class) {
+                    colValue = new Date((Long) colValue);
+                }
+
+                f.set(this, colValue);
             } catch (IllegalAccessException e) {
                 // This should never happen
                 throw new AssertionError("Got an inaccessible field", e);
+            } catch (NoSuchMethodException e) {
+                // This should never happen
+                throw new AssertionError("Got an enum without 'valueOf'", e);
+            } catch (InvocationTargetException e) {
+                // This should never happen
+                throw new AssertionError("Got an exception from 'valueOf'", e);
             }
         }
     }

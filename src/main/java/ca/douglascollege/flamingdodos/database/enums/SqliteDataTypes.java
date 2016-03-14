@@ -10,15 +10,7 @@ public enum SqliteDataTypes {
     Integer("INTEGER"),
     Numeric("NUMERIC"),
     Real("REAL"),
-    None("NONE"),
-    Boolean("BOOLEAN"),
-    Byte("TINYINT"),
-    Short("SMALLINT"),
-    Long("BIGINT"),
-    Blob("BLOB"),
-    Date("DATE"),
-    Time("TIME"),
-    Timestamp("TIMESTAMP");
+    None("NONE");
 
     /**
      * The SQLite Keyword
