@@ -15,9 +15,9 @@ import org.junit.runners.Parameterized;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 import java.lang.reflect.Field;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.*;
