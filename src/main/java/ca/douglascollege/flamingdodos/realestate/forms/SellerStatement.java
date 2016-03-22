@@ -5,6 +5,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class SellerStatement extends BaseForm {
     private JTextArea commissionText;
@@ -16,6 +18,12 @@ public class SellerStatement extends BaseForm {
         super("Seller Statement");
 
         setContentPane(contentPane);
+        closeButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
     }
 
     {

@@ -2,6 +2,8 @@ package ca.douglascollege.flamingdodos.realestate.forms;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class CommissionSlip extends BaseForm {
     private JPanel contentPane;
@@ -13,6 +15,11 @@ public class CommissionSlip extends BaseForm {
         super("Commission Slip for {AGENT_NAME}");
 
         setContentPane(contentPane);
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
     }
 
     {

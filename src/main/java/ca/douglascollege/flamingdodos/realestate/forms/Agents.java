@@ -16,7 +16,7 @@ public class Agents extends BaseForm {
 
     public Agents() {
         super("Agents");
-
+        NewAgents na = new NewAgents();
         setContentPane(contentPane);
 
         newButton.addActionListener(new ActionListener() {
@@ -39,7 +39,16 @@ public class Agents extends BaseForm {
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new BuyerStatement().open();
+                if (agentList.getSelectedIndex()>0) {
+                    String id = agentList.getSelectedValue().toString(); //valid value when button pressed
+                    int index = agentList.getSelectedIndex(); //valid value when value pressed
+                    DefaultListModel listModel = (DefaultListModel) agentList.getModel();
+                    listModel.removeElementAt(index);
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "Please select an agent to delete");
+                }
             }
         });
 

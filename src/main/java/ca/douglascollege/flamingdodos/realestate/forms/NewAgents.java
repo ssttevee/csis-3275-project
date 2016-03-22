@@ -13,9 +13,12 @@ public class NewAgents extends BaseForm {
     private JTextField textField1;
     private JButton cancelButton;
     private JButton addAgentButton;
+    private String userin;
 
     public NewAgents() {
+
         super("New AgentModel");
+        this.userin = userin;
 
         setContentPane(contentPane);
 
@@ -24,6 +27,13 @@ public class NewAgents extends BaseForm {
                 close();
             }
         });
+        addAgentButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+                userin = textField1.getText();
+            }
+        });
+
     }
 
     {

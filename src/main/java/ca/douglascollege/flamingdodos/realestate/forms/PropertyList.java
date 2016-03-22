@@ -2,6 +2,8 @@ package ca.douglascollege.flamingdodos.realestate.forms;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class PropertyList extends BaseForm {
     private JPanel contentPane;
@@ -17,6 +19,38 @@ public class PropertyList extends BaseForm {
         super("Property List");
 
         setContentPane(contentPane);
+        buyerStatementButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+                new BuyerStatement().open();
+            }
+        });
+        sellerStatementButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+                new SellerStatement().open();
+            }
+        });
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+                if (list1.getSelectedIndex()>0) {
+                    String id = list1.getSelectedValue().toString(); //valid value when button pressed
+                    int index = list1.getSelectedIndex(); //valid value when value pressed
+                    DefaultListModel listModel = (DefaultListModel) list1.getModel();
+                    listModel.removeElementAt(index);
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "Please select a property to delete");
+                }
+
+
+
+            }
+        });
+
+
     }
 
     {
