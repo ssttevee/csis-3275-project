@@ -92,7 +92,7 @@ public abstract class BaseModel {
         } else {
             // open the table and traverse to the correct row
             ISqlJetCursor updateCursor = table.open();
-            updateCursor.goToRow(mRowId);
+            updateCursor.goToRow(mRowId - 1);
 
             // update the row's fields
             save(updateCursor);

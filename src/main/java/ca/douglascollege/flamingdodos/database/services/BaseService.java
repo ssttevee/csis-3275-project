@@ -113,7 +113,7 @@ public abstract class BaseService<T extends BaseModel> {
             ISqlJetTable table = getTable(db);
             if (table != null) {
                 ISqlJetCursor cursor = table.open();
-                cursor.goTo(mRowId);
+                cursor.goTo(mRowId - 1);
 
                 T model = newModel();
                 if (model.load(cursor)) {
@@ -137,7 +137,7 @@ public abstract class BaseService<T extends BaseModel> {
             ISqlJetTable table = getTable(db);
 
             ISqlJetCursor deleteCursor = table.open();
-            deleteCursor.goTo(mRowId);
+            deleteCursor.goTo(mRowId - 1);
             deleteCursor.delete();
 
             return true;
