@@ -100,6 +100,9 @@ public class BaseServiceTest<T extends BaseModel> {
             ((PropertyListingModel) evalModel).status = PropertyListingModel.PropertyStatus.FOR_SALE;
             ((PropertyListingModel) phonyModel).status = PropertyListingModel.PropertyStatus.SOLD;
 
+            ((PropertyListingModel) evalModel).listDate = new Date(System.currentTimeMillis());
+            ((PropertyListingModel) phonyModel).listDate = new Date(System.currentTimeMillis() - 1927865);
+
             parameters.add(new Object[]{PropertyListingService.class, evalModel, phonyModel, "PropertyListing"});
         }
 
@@ -138,15 +141,15 @@ public class BaseServiceTest<T extends BaseModel> {
         mPhonyModel = phonyModel;
     }
 
-    protected BaseService<T> createService(SqlJetDb db) throws Exception {
+    private BaseService<T> createService(SqlJetDb db) throws Exception {
         return mServiceClass.getConstructor(SqlJetDb.class).newInstance(db);
     }
 
-    protected T populateModelWithEvaulatableData(T model) throws Exception {
+    private T populateModelWithEvaulatableData(T model) throws Exception {
         return populateModelWithData(model, mEvaluationModel);
     }
 
-    protected T populateModelWithPhonyData(T model) throws Exception {
+    private T populateModelWithPhonyData(T model) throws Exception {
         return populateModelWithData(model, mPhonyModel);
     }
 
@@ -161,7 +164,7 @@ public class BaseServiceTest<T extends BaseModel> {
         return model;
     }
 
-    protected void evaluateModelData(T model) throws Exception {
+    private void evaluateModelData(T model) throws Exception {
         for (Field f : model.getClass().getDeclaredFields()) {
             SqliteColumn column = f.getAnnotation(SqliteColumn.class);
             if (column != null) {
@@ -234,6 +237,14 @@ public class BaseServiceTest<T extends BaseModel> {
         mService.delete(model);
 
         assertNull(mService.lookup(rowId));
+    }
+
+    public void testEmptyModel() throws Exception {
+        T model = mService.newModel();
+
+        long rowId = mService.save(model);
+
+        assertNotNull(mService.lookup(rowId));
     }
 
     @Test

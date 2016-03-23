@@ -5,6 +5,8 @@ import ca.douglascollege.flamingdodos.database.annotations.SqliteForeignKey;
 import ca.douglascollege.flamingdodos.database.enums.SqliteDataTypes;
 import ca.douglascollege.flamingdodos.database.models.SimpleModel;
 
+import java.sql.Date;
+
 public class PropertyListingModel extends SimpleModel {
     public enum PropertyType {
         RESIDENTIAL, COMMERCIAL, OTHER
@@ -55,6 +57,9 @@ public class PropertyListingModel extends SimpleModel {
 
     @SqliteColumn(SqliteDataTypes.Text)
     public PropertyStatus status;
+
+    @SqliteColumn(SqliteDataTypes.Integer)
+    public Date listDate;
 
     @Override
     protected String getTableName() {
