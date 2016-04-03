@@ -28,7 +28,7 @@ public class BadSimpleModelTest {
             @SqliteColumn(value = SqliteDataTypes.Integer)
             @SqliteForeignKey(table = SimpleModelSansPublicNullaryConstructor.class, column = "id")
             public long sansPublicNullaryId;
-        }.getCreateTableStatement();
+        }.createTable(mDatabase);
     }
 
     @Test(expected = AssertionError.class)
@@ -37,7 +37,7 @@ public class BadSimpleModelTest {
             @SqliteColumn(value = SqliteDataTypes.Integer)
             @SqliteForeignKey(table = SimpleModel.class, column = "id")
             public long abstractId;
-        }.getCreateTableStatement();
+        }.createTable(mDatabase);
     }
 
     @Test(expected = AssertionError.class)
@@ -46,7 +46,7 @@ public class BadSimpleModelTest {
             @SqliteColumn(value = SqliteDataTypes.Integer)
             @SqliteForeignKey(table = SimpleModelSansNullaryConstructor.class, column = "id")
             public long sansNullaryId;
-        }.getCreateTableStatement();
+        }.createTable(mDatabase);
     }
 
     private static class SimpleModelSansNullaryConstructor extends SimpleModel {

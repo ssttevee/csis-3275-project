@@ -20,4 +20,9 @@ public class AgentModel extends SimpleModel {
     protected String getTableName() {
         return "Agent";
     }
+
+    @Override
+    public String toString() {
+        return firstName + ' ' + lastName;
+    }
 }

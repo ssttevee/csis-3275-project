@@ -29,9 +29,20 @@ public abstract class BaseService<T extends BaseModel> {
 
     public T lookup(long rowId) throws SqlJetException {
         @SuppressWarnings("unchecked")
-        T model = (T) mDatabase.runReadTransaction(new LookupTransaction(rowId));
+        T[] models = (T[]) mDatabase.runReadTransaction(new LookupTransaction(rowId));
 
-        return model;
+        if (models.length > 0) {
+            return models[0];
+        }
+
+        return null;
+    }
+
+    public T[] lookup(String colName, Object key) throws SqlJetException {
+        @SuppressWarnings("unchecked")
+        T[] models = (T[]) mDatabase.runReadTransaction(new LookupTransaction(colName, key));
+
+        return models;
     }
 
     public T[] getAll() throws SqlJetException {
@@ -61,6 +72,21 @@ public abstract class BaseService<T extends BaseModel> {
         return newModel().getTable(sqlJetDb);
     }
 
+    private abstract class IterativeTransaction implements ISqlJetTransaction {
+        public List<T> readCursor(ISqlJetCursor cursor) throws SqlJetException {
+            List<T> models = new ArrayList<>();
+            while (!cursor.eof()) {
+                T model = newModel();
+                if (model != null && model.load(cursor)) {
+                    models.add(model);
+                }
+
+                cursor.next();
+            }
+            return models;
+        }
+    }
+
     private class SaveTransaction implements ISqlJetTransaction {
         private T mModel;
 
@@ -74,54 +100,68 @@ public abstract class BaseService<T extends BaseModel> {
         }
     }
 
-    private class GetAllTransaction implements ISqlJetTransaction {
+    private class GetAllTransaction extends IterativeTransaction {
         @Override
         public Object run(SqlJetDb db) throws SqlJetException {
-            List<T> models = new ArrayList<>();
-
             ISqlJetTable table = getTable(db);
             if (table != null) {
+                List<T> models = readCursor(table.open());
 
+                @SuppressWarnings("unchecked")
+                T[] retArr = (T[]) Array.newInstance(mModelClass, models.size());
+
+                return models.toArray(retArr);
+            }
+
+            return Array.newInstance(mModelClass, 0);
+        }
+    }
+
+    private class LookupTransaction extends IterativeTransaction {
+        private String mColumnName;
+        private Object mKey;
+
+        public LookupTransaction(long rowId) {
+            mColumnName = null;
+            mKey = rowId;
+        }
+
+        public LookupTransaction(String columnName, Object key) {
+            mColumnName = columnName;
+            mKey = key;
+        }
+
+        @Override
+        public Object run(SqlJetDb db) throws SqlJetException {
+            ISqlJetTable table = getTable(db);
+
+            List<T> models = new ArrayList<>();
+            if (table != null) {
                 ISqlJetCursor cursor = table.open();
 
                 while (!cursor.eof()) {
-                    T model = newModel();
-                    if (model != null && model.load(cursor)) {
+                    if (mColumnName == null) {
+                        if (cursor.getRowId() == ((Long) mKey)) {
+                            T model = newModel();
+                            model.load(cursor);
+                            models.add(model);
+                        }
+                    } else if (cursor.getValue(mColumnName) == mKey) {
+                        T model = newModel();
+                        model.load(cursor);
                         models.add(model);
                     }
 
                     cursor.next();
                 }
+
+                @SuppressWarnings("unchecked")
+                T[] retArr = (T[]) Array.newInstance(mModelClass, models.size());
+
+                return models.toArray(retArr);
             }
 
-            @SuppressWarnings("unchecked")
-            T[] retArr = (T[]) Array.newInstance(mModelClass, models.size());
-
-            return models.toArray(retArr);
-        }
-    }
-
-    private class LookupTransaction implements ISqlJetTransaction {
-        private long mRowId;
-
-        public LookupTransaction(long rowId) {
-            mRowId = rowId;
-        }
-
-        @Override
-        public Object run(SqlJetDb db) throws SqlJetException {
-            ISqlJetTable table = getTable(db);
-            if (table != null) {
-                ISqlJetCursor cursor = table.open();
-                cursor.goTo(mRowId - 1);
-
-                T model = newModel();
-                if (model.load(cursor)) {
-                    return model;
-                }
-            }
-
-            return null;
+            return Array.newInstance(mModelClass, 0);
         }
     }
 
@@ -137,10 +177,15 @@ public abstract class BaseService<T extends BaseModel> {
             ISqlJetTable table = getTable(db);
 
             ISqlJetCursor deleteCursor = table.open();
-            deleteCursor.goTo(mRowId - 1);
-            deleteCursor.delete();
+            while (!deleteCursor.eof()) {
+                if (deleteCursor.getRowId() == mRowId) {
+                    deleteCursor.delete();
+                    return true;
+                }
+                deleteCursor.next();
+            }
 
-            return true;
+            return false;
         }
     }
 }

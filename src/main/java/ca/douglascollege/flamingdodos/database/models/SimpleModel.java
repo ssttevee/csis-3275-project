@@ -2,10 +2,12 @@ package ca.douglascollege.flamingdodos.database.models;
 
 import ca.douglascollege.flamingdodos.database.annotations.SqliteColumn;
 import ca.douglascollege.flamingdodos.database.annotations.SqliteForeignKey;
+import ca.douglascollege.flamingdodos.database.annotations.SqliteIndex;
 import ca.douglascollege.flamingdodos.database.enums.SqliteDataTypes;
 import ca.douglascollege.flamingdodos.realestate.utils.CaseTools;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -66,10 +68,11 @@ public abstract class SimpleModel extends BaseModel {
     }
 
     @Override
-    protected String getCreateTableStatement() {
+    protected void createTable(SqlJetDb db) throws SqlJetException {
         String createStmt = "CREATE TABLE \"" + mTableName + "\" (";
 
         Map<String, SqliteForeignKey> fks = new HashMap<>();
+        Map<String, SqliteIndex> indices = new HashMap<>();
 
         for (Field f : getFields()) {
             String name = CaseTools.camelToSnake(f.getName());
@@ -84,6 +87,11 @@ public abstract class SimpleModel extends BaseModel {
             SqliteForeignKey foreignKey = f.getAnnotation(SqliteForeignKey.class);
             if (foreignKey != null) {
                 fks.put(name, foreignKey);
+            }
+
+            SqliteIndex index = f.getAnnotation(SqliteIndex.class);
+            if (index != null) {
+                indices.put(name, index);
             }
         }
 
@@ -105,7 +113,14 @@ public abstract class SimpleModel extends BaseModel {
             }
         }
 
-        return createStmt.substring(0, createStmt.length() - 1) + ");";
+        db.createTable(createStmt.substring(0, createStmt.length() - 1) + ");");
+
+        for (Map.Entry<String, SqliteIndex> entry : indices.entrySet()) {
+            String name = entry.getKey();
+            SqliteIndex index = entry.getValue();
+
+            db.createIndex("CREATE INDEX " + index.value() + " ON '" + mTableName + "'(" + name + ");");
+        }
     }
 
     @Override
@@ -115,10 +130,12 @@ public abstract class SimpleModel extends BaseModel {
         for (Field f : getFields()) {
             try {
                 Object value = f.get(this);
-                if (f.getType().isEnum()) {
-                    value = value.toString();
-                } else if (f.getType() == Date.class) {
-                    value = ((Date) value).getTime();
+                 if (value != null) {
+                    if (f.getType().isEnum()) {
+                        value = value.toString();
+                    } else if (f.getType() == Date.class) {
+                        value = ((Date) value).getTime();
+                    }
                 }
 
                 dataMap.put(CaseTools.camelToSnake(f.getName()), value);
@@ -136,6 +153,9 @@ public abstract class SimpleModel extends BaseModel {
         for (Field f : getFields()) {
             try {
                 Object colValue = readCursor.getValue(CaseTools.camelToSnake(f.getName()));
+
+                if (colValue == null)
+                    continue;
 
                 if (f.getType().isEnum()) {
                     colValue = (f.getType()).getMethod("valueOf", String.class).invoke(null, (String) colValue);

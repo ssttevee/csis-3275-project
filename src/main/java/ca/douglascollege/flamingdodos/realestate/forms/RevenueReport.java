@@ -1,20 +1,87 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
+import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
+import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
+import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
+import ca.douglascollege.flamingdodos.realestate.generator.RevenueReportGenerator;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import org.tmatesoft.sqljet.core.SqlJetException;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Calendar;
+import java.util.Date;
 
-public class RevenueReport extends BaseForm {
+public class RevenueReport extends BaseOutputForm {
     private JPanel contentPane;
     private JButton closeButton;
     private JButton printButton;
-    private JComboBox comboBox1;
-    private JComboBox comboBox2;
+    private JComboBox yearComboBox;
+    private JComboBox monthComboBox;
     private JTextArea newCenturyRealtyCompanyTextArea;
 
     public RevenueReport() {
         super("Revenue Report");
 
+        monthComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateGenerator();
+            }
+        });
+        yearComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateGenerator();
+            }
+        });
+
         setContentPane(contentPane);
+
+        init(newCenturyRealtyCompanyTextArea, null);
+
+        updateGenerator();
+    }
+
+    private void updateGenerator() {
+        int month = monthComboBox.getSelectedIndex();
+        int year = Integer.parseInt((String) yearComboBox.getSelectedItem());
+
+        try {
+            BaseService<AgentModel> agentService = NewCenturyDatabase.getInstance().getAgentService();
+            BaseService<SaleTransactionModel> saleTransactionService = NewCenturyDatabase.getInstance().getSaleTransactionService();
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(year, month, 1, 0, 0, 0);
+            Date monthStart = calendar.getTime();
+            calendar.set(year, month + 1, 1, 0, 0, 0);
+            Date monthEnd = calendar.getTime();
+
+
+            int agentCount = 0;
+            for (AgentModel agent : agentService.getAll()) {
+                if (agent.hireDate.before(monthEnd)) {
+                    agentCount++;
+                }
+            }
+
+            int transactionCount = 0;
+            for (SaleTransactionModel txn : saleTransactionService.getAll()) {
+                if (txn.date.after(monthStart) && txn.date.before(monthEnd)) {
+                    transactionCount++;
+                }
+            }
+
+            setGenerator(new RevenueReportGenerator(((String) monthComboBox.getSelectedItem()), year, agentCount, transactionCount));
+            pack();
+            updateOutput(newCenturyRealtyCompanyTextArea);
+        } catch (SqlJetException e) {
+            e.printStackTrace();
+        }
     }
 
     {
@@ -33,10 +100,10 @@ public class RevenueReport extends BaseForm {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-        contentPane.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        contentPane.add(panel1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         printButton = new JButton();
         printButton.setText("Print");
         panel1.add(printButton);
@@ -44,27 +111,26 @@ public class RevenueReport extends BaseForm {
         closeButton.setText("Close");
         panel1.add(closeButton);
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        comboBox1 = new JComboBox();
+        panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        contentPane.add(panel2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        yearComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("2016");
-        comboBox1.setModel(defaultComboBoxModel1);
-        panel2.add(comboBox1, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_EAST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        comboBox2 = new JComboBox();
+        yearComboBox.setModel(defaultComboBoxModel1);
+        panel2.add(yearComboBox, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        monthComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
         defaultComboBoxModel2.addElement("January");
         defaultComboBoxModel2.addElement("February");
         defaultComboBoxModel2.addElement("March");
         defaultComboBoxModel2.addElement("April");
-        defaultComboBoxModel2.addElement("May");
-        comboBox2.setModel(defaultComboBoxModel2);
-        panel2.add(comboBox2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        monthComboBox.setModel(defaultComboBoxModel2);
+        panel2.add(monthComboBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         newCenturyRealtyCompanyTextArea = new JTextArea();
         newCenturyRealtyCompanyTextArea.setEditable(false);
         newCenturyRealtyCompanyTextArea.setFont(new Font("Courier New", newCenturyRealtyCompanyTextArea.getFont().getStyle(), newCenturyRealtyCompanyTextArea.getFont().getSize()));
         newCenturyRealtyCompanyTextArea.setText("New Century Realty Company\n\nRevenue Report for {MONTH} {YEAR}\n\n{N_AGENTS} Agents @ $300\t\t\t{AGENT_FEES}\n{N_DEALS} Deals @ $200\t\t\t\t{DEAL_FEES}\n------------------------------------------------------------\nTotal\t\t\t\t\t\t{TOTAL}");
-        contentPane.add(newCenturyRealtyCompanyTextArea, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        contentPane.add(newCenturyRealtyCompanyTextArea, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
     }
 
     /**

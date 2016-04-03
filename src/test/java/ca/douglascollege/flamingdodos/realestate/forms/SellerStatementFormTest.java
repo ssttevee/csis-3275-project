@@ -10,6 +10,6 @@ public class SellerStatementFormTest extends BaseFormTest<SellerStatement> {
 
     @Override
     protected SellerStatement createFormInstance() {
-        return new SellerStatement();
+        return new SellerStatement(null);
     }
 }

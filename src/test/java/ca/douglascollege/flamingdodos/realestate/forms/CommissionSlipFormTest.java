@@ -10,6 +10,6 @@ public class CommissionSlipFormTest extends BaseFormTest<CommissionSlip> {
 
     @Override
     protected CommissionSlip createFormInstance() {
-        return new CommissionSlip();
+        return new CommissionSlip(null);
     }
 }

@@ -40,7 +40,7 @@ public abstract class BaseModel {
      * Get the `CREATE TABLE` SQL statement for this model
      * @return SQL statement beginning with `CREATE TABLE`
      */
-    protected abstract String getCreateTableStatement();
+    protected abstract void createTable(SqlJetDb db) throws SqlJetException;
 
     /**
      * Get all the data in the model in a {@link Map}
@@ -73,7 +73,7 @@ public abstract class BaseModel {
         try {
             return db.getTable(mTableName);
         } catch (SqlJetException e1) {
-            db.createTable(getCreateTableStatement());
+            createTable(db);
             return db.getTable(mTableName);
         }
     }
@@ -91,14 +91,20 @@ public abstract class BaseModel {
             mRowId = table.insertByFieldNamesOr(SqlJetConflictAction.REPLACE, toDataMap());
         } else {
             // open the table and traverse to the correct row
-            ISqlJetCursor updateCursor = table.open();
-            updateCursor.goToRow(mRowId - 1);
+            ISqlJetCursor cursor = table.open();
+            while (!cursor.eof()) {
+                if (cursor.getRowId() == mRowId) {
+                    // update the row's fields
+                    save(cursor);
 
-            // update the row's fields
-            save(updateCursor);
+                    break;
+                }
+
+                cursor.next();
+            }
 
             // finally close the cursor
-            updateCursor.close();
+            cursor.close();
         }
 
         return mRowId;

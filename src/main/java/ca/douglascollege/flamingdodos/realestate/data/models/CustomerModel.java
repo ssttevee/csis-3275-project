@@ -15,4 +15,9 @@ public class CustomerModel extends SimpleModel {
     protected String getTableName() {
         return "Customer";
     }
+
+    @Override
+    public String toString() {
+        return firstName + " " + lastName;
+    }
 }

@@ -4,6 +4,8 @@ import ca.douglascollege.flamingdodos.database.annotations.SqliteColumn;
 import ca.douglascollege.flamingdodos.database.annotations.SqliteForeignKey;
 import ca.douglascollege.flamingdodos.database.enums.SqliteDataTypes;
 import ca.douglascollege.flamingdodos.database.models.SimpleModel;
+import ca.douglascollege.flamingdodos.database.services.BaseService;
+import org.tmatesoft.sqljet.core.SqlJetException;
 
 import java.sql.Date;
 
@@ -64,5 +66,43 @@ public class PropertyListingModel extends SimpleModel {
     @Override
     protected String getTableName() {
         return "Property Listing";
+    }
+
+    @Override
+    public String toString() {
+        return address;
+    }
+
+    public SaleTransactionModel getSaleTransaction(BaseService<SaleTransactionModel> service) {
+        if (status != PropertyStatus.SOLD)
+            return null;
+
+        try {
+            SaleTransactionModel[] transactions = service.lookup("listing_id", getRowId());
+
+            if (transactions.length > 0) {
+                return transactions[0];
+            }
+        } catch (SqlJetException e) {
+            return null;
+        }
+
+        return null;
+    }
+
+    public AgentModel getAgent(BaseService<AgentModel> service) {
+        try {
+            return service.lookup(agentId);
+        } catch (SqlJetException e) {
+            return null;
+        }
+    }
+
+    public CustomerModel getCustomer(BaseService<CustomerModel> service) {
+        try {
+            return service.lookup(customerId);
+        } catch (SqlJetException e) {
+            return null;
+        }
     }
 }

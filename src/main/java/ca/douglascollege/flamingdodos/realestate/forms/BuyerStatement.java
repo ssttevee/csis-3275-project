@@ -1,18 +1,36 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
+import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
+import ca.douglascollege.flamingdodos.realestate.generator.BuyerStatementGenerator;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
-public class BuyerStatement extends BaseForm {
+public class BuyerStatement extends BaseOutputForm {
     private JTextArea commissionText;
     private JButton printButton;
     private JButton closeButton;
     private JPanel contentPane;
 
-    public BuyerStatement() {
+    public BuyerStatement(SaleTransactionModel transactionModel) {
         super("Buyer Statement");
 
         setContentPane(contentPane);
+
+        init(commissionText, new BuyerStatementGenerator(transactionModel));
+
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
     }
 
     {
@@ -31,15 +49,15 @@ public class BuyerStatement extends BaseForm {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
         commissionText = new JTextArea();
         commissionText.setEditable(false);
         commissionText.setFont(new Font("Courier New", commissionText.getFont().getStyle(), commissionText.getFont().getSize()));
         commissionText.setText("New Century Realty Company\n\nBuyer Statement\n\nBuying Price\t\t\t\t\t{PRICE}\nGST - 5%\t\t\t\t\t{AGENT_FEE}\n------------------------------------------------------------\nTotal\t\t\t\t\t\t{TOTAL}");
-        contentPane.add(commissionText, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        contentPane.add(commissionText, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-        contentPane.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         printButton = new JButton();
         printButton.setHorizontalTextPosition(0);
         printButton.setText("Print");
