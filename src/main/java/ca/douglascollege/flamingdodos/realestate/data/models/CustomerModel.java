@@ -28,4 +28,9 @@ public class CustomerModel extends SimpleSqliteModel {
     public String toString() {
         return firstName + " " + lastName;
     }
+
+    @Override
+    public String toString() {
+        return firstName + " " + lastName;
+    }
 }

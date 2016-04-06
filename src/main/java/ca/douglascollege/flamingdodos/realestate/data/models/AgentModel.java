@@ -34,4 +34,9 @@ public class AgentModel extends SimpleSqliteModel {
     public String toString() {
         return firstName + ' ' + lastName;
     }
+
+    @Override
+    public String toString() {
+        return firstName + ' ' + lastName;
+    }
 }

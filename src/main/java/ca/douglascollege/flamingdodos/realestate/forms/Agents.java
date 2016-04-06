@@ -1,6 +1,6 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
-import ca.douglascollege.flamingdodos.database.sqlite.services.BaseService;
+import ca.douglascollege.flamingdodos.database.services.BaseService;
 import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
