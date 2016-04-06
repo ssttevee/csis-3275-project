@@ -33,14 +33,13 @@ public class NewCenturyDatabase extends SqliteDatabase {
 
     private NewCenturyDatabase(File file) throws DatabaseException {
         super(file);
-        boolean newdb = !file.exists();
+    }
 
-        if (newdb) {
-            try {
-                initialize();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    protected void onCreate() throws DatabaseException {
+        try {
+            initialize();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -167,6 +166,8 @@ public class NewCenturyDatabase extends SqliteDatabase {
                 soldListings++;
             }
         }
+
+        commit();
     }
 
     private Date getRandomDate(long start, long end) {

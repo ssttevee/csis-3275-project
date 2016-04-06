@@ -1,12 +1,10 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
-import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
 import ca.douglascollege.flamingdodos.realestate.generator.CommissionSlipGenerator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import org.tmatesoft.sqljet.core.SqlJetException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,18 +17,10 @@ public class CommissionSlip extends BaseOutputForm {
     private JButton closeButton;
     private JButton printButton;
 
-    public CommissionSlip(SaleTransactionModel transactionModel) {
-        try {
-            AgentModel agent = transactionModel
-                    .getPropertyListing(NewCenturyDatabase.getInstance().getPropertyListingService())
-                    .getAgent(NewCenturyDatabase.getInstance().getAgentService());
+    public CommissionSlip(AgentModel agent, SaleTransactionModel transactionModel) {
+        setTitle("Commission Slip for " + agent.firstName + " " + agent.lastName);
 
-            setTitle("Commission Slip for " + agent.firstName + " " + agent.lastName);
-
-            init(commissionText, new CommissionSlipGenerator(transactionModel));
-        } catch (SqlJetException e) {
-            e.printStackTrace();
-        }
+        init(commissionText, new CommissionSlipGenerator(transactionModel));
 
         setContentPane(contentPane);
 

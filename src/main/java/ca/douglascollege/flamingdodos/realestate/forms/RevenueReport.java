@@ -1,13 +1,15 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
-import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.database.exceptions.DatabaseException;
+import ca.douglascollege.flamingdodos.database.interfaces.DatabaseQuery;
+import ca.douglascollege.flamingdodos.database.interfaces.IDatabaseCursor;
+import ca.douglascollege.flamingdodos.database.sqlite.util.BasePropertyFilter;
 import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
 import ca.douglascollege.flamingdodos.realestate.generator.RevenueReportGenerator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import org.tmatesoft.sqljet.core.SqlJetException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +28,13 @@ public class RevenueReport extends BaseOutputForm {
 
     public RevenueReport() {
         super("Revenue Report");
+
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
 
         monthComboBox.addActionListener(new ActionListener() {
             @Override
@@ -52,34 +61,58 @@ public class RevenueReport extends BaseOutputForm {
         int year = Integer.parseInt((String) yearComboBox.getSelectedItem());
 
         try {
-            BaseService<AgentModel> agentService = NewCenturyDatabase.getInstance().getAgentService();
-            BaseService<SaleTransactionModel> saleTransactionService = NewCenturyDatabase.getInstance().getSaleTransactionService();
-
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month, 1, 0, 0, 0);
-            Date monthStart = calendar.getTime();
+            final Date monthStart = calendar.getTime();
             calendar.set(year, month + 1, 1, 0, 0, 0);
-            Date monthEnd = calendar.getTime();
+            final Date monthEnd = calendar.getTime();
 
 
             int agentCount = 0;
-            for (AgentModel agent : agentService.getAll()) {
-                if (agent.hireDate.before(monthEnd)) {
-                    agentCount++;
-                }
+            IDatabaseCursor<AgentModel> agentsCursor = NewCenturyDatabase.getInstance().execute(AgentModel.class, new DatabaseQuery().setFilter(
+                    new BasePropertyFilter(AgentModel.COLUMN_HIRE_DATE) {
+                        @Override
+                        protected boolean evaluate(Object operand) {
+                            if (operand instanceof Long) {
+                                operand = new Date((Long) operand);
+                            } else if (!(operand instanceof Date)) {
+                                return false;
+                            }
+
+                            return ((Date) operand).before(monthEnd);
+                        }
+                    }
+            ));
+            // these should already be before monthEnd
+            while (agentsCursor.hasNext()) {
+                AgentModel agent = agentsCursor.next();
+                agentCount++;
             }
 
             int transactionCount = 0;
-            for (SaleTransactionModel txn : saleTransactionService.getAll()) {
-                if (txn.date.after(monthStart) && txn.date.before(monthEnd)) {
-                    transactionCount++;
-                }
+            IDatabaseCursor<SaleTransactionModel> txnCursor = NewCenturyDatabase.getInstance().execute(SaleTransactionModel.class, new DatabaseQuery().setFilter(
+                    new BasePropertyFilter(SaleTransactionModel.COLUMN_DATE) {
+                        @Override
+                        protected boolean evaluate(Object operand) {
+                            if (operand instanceof Long) {
+                                operand = new Date((Long) operand);
+                            } else if (!(operand instanceof Date)) {
+                                return false;
+                            }
+
+                            return ((Date) operand).after(monthStart) && ((Date) operand).before(monthEnd);
+                        }
+                    }
+            ));
+            while (txnCursor.hasNext()) {
+                SaleTransactionModel txn = txnCursor.next();
+                transactionCount++;
             }
 
             setGenerator(new RevenueReportGenerator(((String) monthComboBox.getSelectedItem()), year, agentCount, transactionCount));
             pack();
             updateOutput(newCenturyRealtyCompanyTextArea);
-        } catch (SqlJetException e) {
+        } catch (DatabaseException e) {
             e.printStackTrace();
         }
     }

@@ -16,18 +16,13 @@ public class CustomerModel extends SimpleSqliteModel {
     public static final String COLUMN_LAST_NAME = "last_name";
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_ID, primaryKey = true)
-    protected long id;
+    public Long id;
 
     @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_FIRST_NAME)
     public String firstName;
 
     @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_LAST_NAME)
     public String lastName;
-
-    @Override
-    public String toString() {
-        return firstName + " " + lastName;
-    }
 
     @Override
     public String toString() {

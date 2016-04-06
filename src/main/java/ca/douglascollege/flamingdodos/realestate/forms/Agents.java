@@ -1,13 +1,15 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
-import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.database.exceptions.DatabaseException;
+import ca.douglascollege.flamingdodos.database.interfaces.DatabaseQuery;
+import ca.douglascollege.flamingdodos.database.interfaces.IDatabaseCursor;
+import ca.douglascollege.flamingdodos.database.sqlite.util.NumericPropertyFilter;
 import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import org.tmatesoft.sqljet.core.SqlJetException;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -16,6 +18,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class Agents extends BaseForm {
@@ -29,25 +33,17 @@ public class Agents extends BaseForm {
     private JLabel soldPropertiesCountLabel;
     private JLabel totalListingsCountLabel;
 
-    private BaseService<AgentModel> agentService;
+    private List<AgentModel> agents = new ArrayList<>();
 
     public Agents() {
         super("Agents");
 
         setContentPane(contentPane);
 
-        try {
-            agentService = NewCenturyDatabase.getInstance().getAgentService();
-        } catch (SqlJetException e) {
-            JOptionPane.showMessageDialog(null, "Error accessing database.");
-            close();
-            return;
-        }
-
         newButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 try {
-                    AgentModel agentModel = agentService.newModel();
+                    AgentModel agentModel = new AgentModel();
 
                     String name = (String) JOptionPane.showInputDialog(
                             (Component) evt.getSource(),
@@ -67,11 +63,11 @@ public class Agents extends BaseForm {
                             agentModel.lastName = parts[1];
                         }
 
-                        agentService.save(agentModel);
+                        NewCenturyDatabase.getInstance().insert(null, agentModel);
 
                         updateList();
                     }
-                } catch (SqlJetException e) {
+                } catch (DatabaseException e) {
                     e.printStackTrace();
                 }
             }
@@ -100,11 +96,11 @@ public class Agents extends BaseForm {
                             agentModel.lastName = parts[1];
                         }
 
-                        agentService.save(agentModel);
+                        NewCenturyDatabase.getInstance().insert(agentModel.id, agentModel);
 
                         updateList();
                     }
-                } catch (SqlJetException e) {
+                } catch (DatabaseException e) {
                     e.printStackTrace();
                 }
             }
@@ -113,9 +109,9 @@ public class Agents extends BaseForm {
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 try {
-                    agentService.delete((AgentModel) agentList.getSelectedValue());
+                    NewCenturyDatabase.getInstance().delete(AgentModel.class, ((AgentModel) agentList.getSelectedValue()).getRowId());
                     updateList();
-                } catch (SqlJetException e) {
+                } catch (DatabaseException e) {
                     e.printStackTrace();
                 }
             }
@@ -138,30 +134,50 @@ public class Agents extends BaseForm {
                     deleteButton.setEnabled(true);
 
                     try {
-                        BaseService<PropertyListingModel> service = NewCenturyDatabase.getInstance().getPropertyListingService();
-
                         AgentModel agent = ((AgentModel) agentList.getSelectedValue());
 
                         hireDateLabel.setText(agent.hireDate.toString());
 
+                        int count = 0;
                         int countSold = 0;
 
-                        PropertyListingModel[] properties = service.lookup("agent_id", agent.getRowId());
-                        for (PropertyListingModel property : properties) {
-                            if (property.status == PropertyListingModel.PropertyStatus.SOLD) {
+                        IDatabaseCursor<PropertyListingModel> properties = NewCenturyDatabase.getInstance().execute(
+                                PropertyListingModel.class,
+                                new DatabaseQuery().setFilter(
+                                        new NumericPropertyFilter(
+                                                PropertyListingModel.COLUMN_AGENT_ID,
+                                                NumericPropertyFilter.Operator.EQUAL,
+                                                agent.getRowId())));
+
+                        while (properties.hasNext()) {
+                            count++;
+                            if (properties.next().status == PropertyListingModel.PropertyStatus.SOLD) {
                                 countSold++;
                             }
                         }
 
-                        totalListingsCountLabel.setText("" + properties.length);
+                        totalListingsCountLabel.setText("" + count);
                         soldPropertiesCountLabel.setText("" + countSold);
-                    } catch (SqlJetException e) {
+                    } catch (DatabaseException e) {
                         JOptionPane.showMessageDialog(null, "Error reading agent info");
                         e.printStackTrace();
+                        close();
                     }
 
                     pack();
                 }
+            }
+        });
+
+        agentList.setModel(new AbstractListModel() {
+            @Override
+            public int getSize() {
+                return agents.size();
+            }
+
+            @Override
+            public Object getElementAt(int index) {
+                return agents.get(index);
             }
         });
 
@@ -170,10 +186,16 @@ public class Agents extends BaseForm {
 
     private void updateList() {
         try {
-            BaseService<AgentModel> agentService = NewCenturyDatabase.getInstance().getAgentService();
-            agentList.setListData(agentService.getAll());
-        } catch (SqlJetException e) {
+            IDatabaseCursor<AgentModel> agents = NewCenturyDatabase.getInstance().getAll(AgentModel.class);
+
+            this.agents.clear();
+            while (agents.hasNext()) {
+                AgentModel agent = agents.next();
+                this.agents.add(agent);
+            }
+        } catch (DatabaseException e) {
             JOptionPane.showMessageDialog(null, "Error attempting to list agents");
+            e.printStackTrace();
             close();
         }
     }

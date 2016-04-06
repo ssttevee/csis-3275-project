@@ -1,8 +1,12 @@
 package ca.douglascollege.flamingdodos.database.interfaces;
 
-import java.util.Iterator;
-import java.util.Map;
+import ca.douglascollege.flamingdodos.database.exceptions.DatabaseException;
 
-public interface IDatabaseCursor extends Iterator<Map<String, Object>> {
+public interface IDatabaseCursor<T> {
 
+    boolean hasNext() throws DatabaseException;
+
+    T next() throws DatabaseException;
+
+    void close() throws DatabaseException;
 }

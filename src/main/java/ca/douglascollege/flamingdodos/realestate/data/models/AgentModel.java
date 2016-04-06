@@ -19,7 +19,7 @@ public class AgentModel extends SimpleSqliteModel {
     public static final String COLUMN_HIRE_DATE = "hire_date";
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_ID, primaryKey = true)
-    protected long id;
+    public Long id;
 
     @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_FIRST_NAME)
     public String firstName;
@@ -29,11 +29,6 @@ public class AgentModel extends SimpleSqliteModel {
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_HIRE_DATE)
     public Date hireDate;
-
-    @Override
-    public String toString() {
-        return firstName + ' ' + lastName;
-    }
 
     @Override
     public String toString() {

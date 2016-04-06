@@ -5,8 +5,8 @@ import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionMode
 public class CommissionSlipGenerator extends BaseGenerator {
 
     public CommissionSlipGenerator(SaleTransactionModel txn) {
-        double first100k = txn.amount >= 100000 ? 8000 : txn.amount * 0.08;
-        double remaining = txn.amount >= 100000 ? 0 : (txn.amount - 100000) * 0.03;
+        double first100k = txn.amount <= 100000 ? 8000 : txn.amount * 0.08;
+        double remaining = txn.amount <= 100000 ? 0 : (txn.amount - 100000) * 0.03;
         double gst = (first100k + remaining) * 0.05;
 
         addLine().addSegment(-1, "New Century Realty Company");

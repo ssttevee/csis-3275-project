@@ -15,19 +15,19 @@ public class PropertyListingModel extends SimpleSqliteModel {
     public static final String TABLE_PROPERTY_LISTING = "Property Listing";
 
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_AGENT_ID = "id";
-    public static final String COLUMN_CUSTOMER_ID = "id";
-    public static final String COLUMN_ASKING_PRICE = "id";
-    public static final String COLUMN_PROPERTY_TYPE = "id";
-    public static final String COLUMN_BUILDING_TYPE = "id";
-    public static final String COLUMN_ADDRESS = "id";
-    public static final String COLUMN_FLOOR_AREA = "id";
-    public static final String COLUMN_LAND_AREA = "id";
-    public static final String COLUMN_BEDROOM_COUNT = "id";
-    public static final String COLUMN_BATHROOM_COUNT = "id";
-    public static final String COLUMN_BUILD_YEAR = "id";
-    public static final String COLUMN_STATUS = "id";
-    public static final String COLUMN_LIST_DATE = "id";
+    public static final String COLUMN_AGENT_ID = "agent_id";
+    public static final String COLUMN_CUSTOMER_ID = "customer_id";
+    public static final String COLUMN_ASKING_PRICE = "asking_price";
+    public static final String COLUMN_PROPERTY_TYPE = "property_type";
+    public static final String COLUMN_BUILDING_TYPE = "building_type";
+    public static final String COLUMN_ADDRESS = "address";
+    public static final String COLUMN_FLOOR_AREA = "floor_area";
+    public static final String COLUMN_LAND_AREA = "land_area";
+    public static final String COLUMN_BEDROOM_COUNT = "bedroom_count";
+    public static final String COLUMN_BATHROOM_COUNT = "bathroom_count";
+    public static final String COLUMN_BUILD_YEAR = "build_year";
+    public static final String COLUMN_STATUS = "status";
+    public static final String COLUMN_LIST_DATE = "list_date";
 
     public enum PropertyType {
         RESIDENTIAL, COMMERCIAL, OTHER
@@ -42,15 +42,15 @@ public class PropertyListingModel extends SimpleSqliteModel {
     }
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_ID, primaryKey = true)
-    protected long id;
+    public Long id;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_AGENT_ID)
     @SqliteForeignKey(table = AgentModel.class, column = "id")
-    public long agentId;
+    public Long agentId;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_CUSTOMER_ID)
     @SqliteForeignKey(table = CustomerModel.class, column = "id")
-    public long customerId;
+    public Long customerId;
 
     @SqliteColumn(type = SqliteDataTypes.Real, name = COLUMN_ASKING_PRICE)
     public double askingPrice;
@@ -71,13 +71,13 @@ public class PropertyListingModel extends SimpleSqliteModel {
     public double landArea;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BEDROOM_COUNT)
-    public long bedroomCount;
+    public Long bedroomCount;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BATHROOM_COUNT)
-    public long bathroomCount;
+    public Long bathroomCount;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BUILD_YEAR)
-    public long buildYear;
+    public Long buildYear;
 
     @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_STATUS)
     public PropertyStatus status;

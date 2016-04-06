@@ -1,10 +1,8 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
 import ca.douglascollege.flamingdodos.database.sqlite.models.SimpleSqliteModel;
-import ca.douglascollege.flamingdodos.database.sqlite.services.BaseService;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 public class BadModelServiceTest {
@@ -18,13 +16,6 @@ public class BadModelServiceTest {
     @After
     public void tearDown() throws Exception {
         mDatabase.close();
-    }
-
-    @Test(expected = AssertionError.class)
-    public void testNewBadModel() throws Exception {
-        BaseService<BadModel> badModelService = new BaseService<BadModel>(mDatabase, BadModel.class) {};
-
-        badModelService.newModel();
     }
 
     private static class BadModel extends SimpleSqliteModel {

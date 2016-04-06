@@ -1,12 +1,16 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
-import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.database.exceptions.DatabaseException;
+import ca.douglascollege.flamingdodos.database.interfaces.DatabaseQuery;
+import ca.douglascollege.flamingdodos.database.interfaces.IDatabaseCursor;
+import ca.douglascollege.flamingdodos.database.sqlite.util.NumericPropertyFilter;
 import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
+import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
+import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import org.tmatesoft.sqljet.core.SqlJetException;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -14,6 +18,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PropertyList extends BaseForm {
     private JPanel contentPane;
@@ -30,13 +36,21 @@ public class PropertyList extends BaseForm {
     private JPanel containerPanel;
     private JButton commissionSlipButton;
 
+    private List<PropertyListingModel> mProperties = new ArrayList<>();
     private IPropertyListingDataSource mDataSource;
 
     public PropertyList() {
         this("", new IPropertyListingDataSource() {
             @Override
-            public PropertyListingModel[] getPropertyListings(BaseService<PropertyListingModel> service) throws SqlJetException {
-                return service.getAll();
+            public PropertyListingModel[] getPropertyListings() throws DatabaseException {
+                List<PropertyListingModel> ret = new ArrayList<>();
+
+                IDatabaseCursor<PropertyListingModel> cursor = NewCenturyDatabase.getInstance().getAll(PropertyListingModel.class);
+                while (cursor.hasNext()) {
+                    ret.add(cursor.next());
+                }
+
+                return (PropertyListingModel[]) ret.toArray();
             }
         });
 
@@ -92,10 +106,10 @@ public class PropertyList extends BaseForm {
                     @Override
                     public void addListing(PropertyListingModel listing) {
                         try {
-                            NewCenturyDatabase.getInstance().getPropertyListingService().save(listing);
+                            NewCenturyDatabase.getInstance().insert(null, listing);
                             updateList();
                             pack();
-                        } catch (SqlJetException e) {
+                        } catch (DatabaseException e) {
                             e.printStackTrace();
                         }
                     }
@@ -110,10 +124,10 @@ public class PropertyList extends BaseForm {
                     @Override
                     public void addListing(PropertyListingModel listing) {
                         try {
-                            NewCenturyDatabase.getInstance().getPropertyListingService().save(listing);
+                            NewCenturyDatabase.getInstance().insert(listing.getRowId(), listing);
                             updateList();
                             pack();
-                        } catch (SqlJetException e) {
+                        } catch (DatabaseException e) {
                             e.printStackTrace();
                         }
                     }
@@ -127,9 +141,11 @@ public class PropertyList extends BaseForm {
                 PropertyListingModel model = (PropertyListingModel) list1.getSelectedValue();
 
                 try {
-                    new BuyerStatement(model.getSaleTransaction(NewCenturyDatabase.getInstance().getSaleTransactionService())).open();
-                } catch (SqlJetException e) {
+                    new BuyerStatement(getRelatedSaleTransaction(model)).open();
+                } catch (DatabaseException e) {
                     e.printStackTrace();
+                } catch (NullPointerException e) {
+                    JOptionPane.showMessageDialog(null, "Couldn't find any transactions related to this property...");
                 }
             }
         });
@@ -140,9 +156,11 @@ public class PropertyList extends BaseForm {
                 PropertyListingModel model = (PropertyListingModel) list1.getSelectedValue();
 
                 try {
-                    new SellerStatement(model.getSaleTransaction(NewCenturyDatabase.getInstance().getSaleTransactionService())).open();
-                } catch (SqlJetException e) {
+                    new SellerStatement(getRelatedSaleTransaction(model)).open();
+                } catch (DatabaseException e) {
                     e.printStackTrace();
+                } catch (NullPointerException e) {
+                    JOptionPane.showMessageDialog(null, "Couldn't find any transactions related to this property...");
                 }
             }
         });
@@ -153,9 +171,11 @@ public class PropertyList extends BaseForm {
                 PropertyListingModel model = (PropertyListingModel) list1.getSelectedValue();
 
                 try {
-                    new CommissionSlip(model.getSaleTransaction(NewCenturyDatabase.getInstance().getSaleTransactionService())).open();
-                } catch (SqlJetException e) {
+                    new CommissionSlip(getRelatedAgent(model), getRelatedSaleTransaction(model)).open();
+                } catch (DatabaseException e) {
                     e.printStackTrace();
+                } catch (NullPointerException e) {
+                    JOptionPane.showMessageDialog(null, "Couldn't find any transactions related to this property...");
                 }
             }
         });
@@ -167,15 +187,59 @@ public class PropertyList extends BaseForm {
             }
         });
 
+        list1.setModel(new AbstractListModel<PropertyListingModel>() {
+            @Override
+            public int getSize() {
+                return mProperties.size();
+            }
+
+            @Override
+            public PropertyListingModel getElementAt(int index) {
+                return mProperties.get(index);
+            }
+        });
         updateList();
+    }
+
+    private SaleTransactionModel getRelatedSaleTransaction(PropertyListingModel model) throws DatabaseException {
+        IDatabaseCursor<SaleTransactionModel> txnsFound = NewCenturyDatabase.getInstance().execute(SaleTransactionModel.class,
+                new DatabaseQuery().setFilter(
+                        new NumericPropertyFilter(
+                                SaleTransactionModel.COLUMN_LISTING_ID,
+                                NumericPropertyFilter.Operator.EQUAL,
+                                model.id)).setLimit(1));
+
+        if (txnsFound.hasNext()) {
+            return txnsFound.next();
+        } else {
+            return null;
+        }
+    }
+
+    private AgentModel getRelatedAgent(PropertyListingModel model) throws DatabaseException {
+        IDatabaseCursor<AgentModel> txnsFound = NewCenturyDatabase.getInstance().execute(AgentModel.class,
+                new DatabaseQuery().setFilter(
+                        new NumericPropertyFilter(
+                                AgentModel.COLUMN_ID,
+                                NumericPropertyFilter.Operator.EQUAL,
+                                model.agentId)).setLimit(1));
+
+        if (txnsFound.hasNext()) {
+            return txnsFound.next();
+        } else {
+            return null;
+        }
     }
 
     public void updateList() {
         try {
-            BaseService<PropertyListingModel> propertyListingService = NewCenturyDatabase.getInstance().getPropertyListingService();
+            IDatabaseCursor<PropertyListingModel> cursor = NewCenturyDatabase.getInstance().getAll(PropertyListingModel.class);
 
-            list1.setListData(mDataSource.getPropertyListings(propertyListingService));
-        } catch (SqlJetException e) {
+            while (cursor.hasNext()) {
+                PropertyListingModel property = cursor.next();
+                mProperties.add(property);
+            }
+        } catch (DatabaseException e) {
             e.printStackTrace();
         }
     }
@@ -281,7 +345,7 @@ public class PropertyList extends BaseForm {
     }
 
     public interface IPropertyListingDataSource {
-        PropertyListingModel[] getPropertyListings(BaseService<PropertyListingModel> service) throws SqlJetException;
+        PropertyListingModel[] getPropertyListings() throws DatabaseException;
     }
 
 }

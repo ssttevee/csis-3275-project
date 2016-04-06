@@ -11,7 +11,7 @@ public interface IDatabase {
      * @param key            The key of the model to retrieve (i.e Row Id)
      * @throws DatabaseException
      */
-    IDatabaseModel lookup(Class<? extends IDatabaseModel> modelClass, Object key) throws DatabaseException;
+    <T extends IDatabaseModel> T lookup(Class<T> modelClass, Object key) throws DatabaseException;
 
     /**
      * Inserts data into the database
@@ -21,7 +21,7 @@ public interface IDatabase {
      * @return           The key of the inserted model (i.e Row Id)
      * @throws DatabaseException
      */
-    Object insert(@Nullable Object key, IDatabaseModel source) throws DatabaseException;
+    <T extends IDatabaseModel> Object insert(@Nullable Object key, T source) throws DatabaseException;
 
     /**
      * Gets all the items within the given collection
@@ -29,7 +29,7 @@ public interface IDatabase {
      * @return All the items in the given collection within a cursor
      * @throws DatabaseException
      */
-    IDatabaseCursor getAll(Class<? extends IDatabaseModel> modelClass) throws DatabaseException;
+    <T extends IDatabaseModel> IDatabaseCursor<T> getAll(Class<T> modelClass) throws DatabaseException;
 
     /**
      * Executes a query and returns the results in a database cursor
@@ -37,7 +37,7 @@ public interface IDatabase {
      * @return The query results within a cursor
      * @throws DatabaseException
      */
-    IDatabaseCursor execute(DatabaseQuery query) throws DatabaseException;
+    <T extends IDatabaseModel> IDatabaseCursor<T> execute(Class<T> modelClass, DatabaseQuery query) throws DatabaseException;
 
     boolean delete(Class<? extends IDatabaseModel> modelClass, Object key) throws DatabaseException;
 }

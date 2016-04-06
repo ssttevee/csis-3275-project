@@ -12,6 +12,7 @@ import ca.douglascollege.flamingdodos.database.sqlite.models.BaseSqliteModel;
 import ca.douglascollege.flamingdodos.realestate.utils.CaseTools;
 import com.sun.istack.internal.Nullable;
 import org.tmatesoft.sqljet.core.SqlJetException;
+import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
 import org.tmatesoft.sqljet.core.schema.ISqlJetColumnDef;
 import org.tmatesoft.sqljet.core.schema.SqlJetConflictAction;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
@@ -24,18 +25,27 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class SqliteDatabase implements IDatabase {
-    private SqlJetDb mDatabase;
+    protected SqlJetDb mDatabase;
 
     public SqliteDatabase(File file) throws DatabaseException {
+        boolean isNew = !file.exists();
+
         try {
             this.mDatabase = SqlJetDb.open(file, true);
         } catch (SqlJetException e) {
             throw new DatabaseException(e);
         }
+
+        if (isNew)
+            onCreate();
+    }
+
+    protected void onCreate() throws DatabaseException {
+
     }
 
     @Override
-    public IDatabaseModel lookup(Class<? extends IDatabaseModel> modelClass, final Object lookupKey) throws DatabaseException {
+    public <T extends IDatabaseModel> T lookup(Class<T> modelClass, final Object lookupKey) throws DatabaseException {
         try {
             ISqlJetTable table = getTable(modelClass);
 
@@ -47,8 +57,12 @@ public class SqliteDatabase implements IDatabase {
             }.getOne();
 
             if (found != null) {
-                IDatabaseModel model = modelClass.newInstance();
+                T model = modelClass.newInstance();
                 model.load(found);
+
+                if (model instanceof BaseSqliteModel) {
+                    ((BaseSqliteModel) model).setRowId((Long) found.get("__key__"));
+                }
 
                 return model;
             } else {
@@ -61,7 +75,7 @@ public class SqliteDatabase implements IDatabase {
     }
 
     @Override
-    public Object insert(@Nullable Object key, IDatabaseModel source) throws DatabaseException {
+    public <T extends IDatabaseModel> Object insert(@Nullable Object key, T source) throws DatabaseException {
         try {
             ISqlJetTable table = getTable(source.getClass());
 
@@ -78,7 +92,7 @@ public class SqliteDatabase implements IDatabase {
             if (key == null) {
                 id = table.insertOr(SqlJetConflictAction.FAIL, data);
             } else {
-                id = table.insertWithRowIdOr(SqlJetConflictAction.FAIL, (Long) key, data);
+                id = table.insertWithRowIdOr(SqlJetConflictAction.REPLACE, (Long) key, data);
             }
 
             if (source instanceof BaseSqliteModel)
@@ -91,14 +105,15 @@ public class SqliteDatabase implements IDatabase {
     }
 
     @Override
-    public IDatabaseCursor getAll(Class<? extends IDatabaseModel> modelClass) throws DatabaseException {
+    public <T extends IDatabaseModel> IDatabaseCursor<T> getAll(final Class<T> modelClass) throws DatabaseException {
         try {
             ISqlJetTable table = getTable(modelClass);
 
+            mDatabase.beginTransaction(SqlJetTransactionMode.READ_ONLY);
             final ISqlJetCursor cursor = table.open();
             final String[] colNames = getColNames(table);
 
-            return new IDatabaseCursor() {
+            return new IDatabaseCursor<T>() {
                 private boolean first = true;
 
                 @Override
@@ -116,13 +131,29 @@ public class SqliteDatabase implements IDatabase {
                 }
 
                 @Override
-                public Map<String, Object> next() {
-                    return getItemMap(cursor, colNames);
+                public T next() throws DatabaseException {
+                    try {
+                        T model = modelClass.newInstance();
+                        Map<String, Object> itemMap = getItemMap(cursor, colNames);
+                        model.load(itemMap);
+
+                        if (model instanceof BaseSqliteModel) {
+                            ((BaseSqliteModel) model).setRowId((Long) itemMap.get("__key__"));
+                        }
+
+                        return model;
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        throw new DatabaseException(e);
+                    }
                 }
 
                 @Override
-                public void remove() {
-                    throw new UnsupportedOperationException();
+                public void close() throws DatabaseException {
+                    try {
+                        cursor.close();
+                    } catch (SqlJetException e) {
+                        throw new DatabaseException(e);
+                    }
                 }
             };
         } catch (SqlJetException e) {
@@ -131,31 +162,64 @@ public class SqliteDatabase implements IDatabase {
     }
 
     @Override
-    public IDatabaseCursor execute(final DatabaseQuery query) throws DatabaseException {
+    public <T extends IDatabaseModel> IDatabaseCursor<T> execute(final Class<T> modelClass, DatabaseQuery query) throws DatabaseException {
         try {
-            ISqlJetTable table = getTable(query.getModelClass());
+            ISqlJetTable table = getTable(modelClass);
 
-            final Iterator<Map<String, Object>> it = new SqlJetItemTraverser(table) {
+
+            mDatabase.beginTransaction(SqlJetTransactionMode.READ_ONLY);
+            final DatabaseQuery q = new DatabaseQuery(query);
+            final String[] colNames = getColNames(table);
+            final ISqlJetCursor cursor = table.open();
+
+            return new IDatabaseCursor<T>() {
+                private Map<String, Object> mCurrentItem;
+
                 @Override
-                protected boolean traverse(Object key, Map<String, Object> item) {
-                    return query.getFilter().evaluate(key, item);
+                public boolean hasNext() throws DatabaseException {
+                    try {
+                        if (q.getLimit() == 0)
+                            return false;
+
+                        if (cursor.eof())
+                            return false;
+
+                        do {
+                            mCurrentItem = getItemMap(cursor, colNames);
+                            if (q.getFilter().evaluate(cursor.getRowId(), mCurrentItem)) {
+                                q.decrementLimit();
+                                cursor.next();
+                                return true;
+                            }
+                        } while(cursor.next());
+                        return false;
+                    } catch (SqlJetException e) {
+                        throw new DatabaseException(e);
+                    }
                 }
-            }.getAll().iterator();
 
-            return new IDatabaseCursor() {
                 @Override
-                public boolean hasNext() {
-                    return it.hasNext();
+                public T next() throws DatabaseException {
+                    try {
+                        T model = modelClass.newInstance();
+                        model.load(mCurrentItem);
+
+                        if (model instanceof BaseSqliteModel) {
+                            ((BaseSqliteModel) model).setRowId((Long) mCurrentItem.get("__key__"));
+                        }
+                        return model;
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        throw new DatabaseException(e);
+                    }
                 }
 
                 @Override
-                public Map<String, Object> next() {
-                    return it.next();
-                }
-
-                @Override
-                public void remove() {
-                    it.remove();
+                public void close() throws DatabaseException {
+                    try {
+                        cursor.close();
+                    } catch (SqlJetException e) {
+                        throw new DatabaseException(e);
+                    }
                 }
             };
         } catch (SqlJetException e) {
@@ -168,8 +232,8 @@ public class SqliteDatabase implements IDatabase {
         try {
             ISqlJetTable table = getTable(modelClass);
 
+            mDatabase.beginTransaction(SqlJetTransactionMode.WRITE);
             new SqlJetCursorTraverser(table) {
-
                 @Override
                 protected boolean traverse(Object key, Map<String, Object> item) {
                     return key == lookupKey;
@@ -277,8 +341,14 @@ public class SqliteDatabase implements IDatabase {
         return ret;
     }
 
-    private Map<String, Object> getItemMap(ISqlJetCursor cursor, String[] colNames) {
+    private Map<String, Object> getItemMap(ISqlJetCursor cursor, String[] colNames) throws DatabaseException {
         Map<String, Object> ret = new HashMap<>();
+
+        try {
+            ret.put("__key__", cursor.getRowId());
+        } catch (SqlJetException e) {
+            throw new DatabaseException(e);
+        }
 
         for (String col : colNames) {
             try {
@@ -302,20 +372,26 @@ public class SqliteDatabase implements IDatabase {
 
         protected abstract boolean traverse(Object key, Map<String, Object> item);
 
-        protected abstract boolean onFound(ISqlJetCursor cursor) throws SqlJetException;
+        protected abstract boolean onFound(ISqlJetCursor cursor) throws SqlJetException, DatabaseException;
 
-        public void run() throws SqlJetException {
-            ISqlJetCursor cursor = mTable.open();
-            if (!cursor.eof()) {
-                do {
-                    Map<String, Object> itemMap = getItemMap(cursor, mColNames);
+        public void run() throws DatabaseException {
+            try {
+                mDatabase.beginTransaction(SqlJetTransactionMode.READ_ONLY);
+                ISqlJetCursor cursor = mTable.open();
+                if (!cursor.eof()) {
+                    do {
+                        Map<String, Object> itemMap = getItemMap(cursor, mColNames);
 
-                    if (traverse(cursor.getRowId(), itemMap)) {
-                        if (onFound(cursor)) {
-                            break;
+                        if (traverse(cursor.getRowId(), itemMap)) {
+                            if (onFound(cursor)) {
+                                break;
+                            }
                         }
-                    }
-                } while(cursor.next());
+                    } while (cursor.next());
+                }
+                cursor.close();
+            } catch (SqlJetException e) {
+                throw new DatabaseException(e);
             }
         }
     }
@@ -329,12 +405,12 @@ public class SqliteDatabase implements IDatabase {
         }
 
         @Override
-        protected boolean onFound(ISqlJetCursor cursor) {
+        protected boolean onFound(ISqlJetCursor cursor) throws DatabaseException {
             mItems.add(getItemMap(cursor, mColNames));
             return mSingle;
         }
 
-        public Map<String, Object> getOne() throws SqlJetException {
+        public Map<String, Object> getOne() throws DatabaseException {
             mItems = new ArrayList<>();
             mSingle = true;
 
@@ -346,7 +422,7 @@ public class SqliteDatabase implements IDatabase {
             return null;
         }
 
-        public List<Map<String, Object>> getAll() throws SqlJetException {
+        public List<Map<String, Object>> getAll() throws DatabaseException {
             mItems = new ArrayList<>();
             mSingle = false;
 

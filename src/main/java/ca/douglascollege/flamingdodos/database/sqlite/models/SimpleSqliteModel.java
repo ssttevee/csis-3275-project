@@ -88,7 +88,7 @@ public abstract class SimpleSqliteModel extends BaseSqliteModel {
                     colName = CaseTools.camelToSnake(f.getName());
                 }
 
-                if (!data.containsValue(colName))
+                if (!data.containsKey(colName))
                     continue;
 
                 Object colValue = data.get(colName);
@@ -125,7 +125,7 @@ public abstract class SimpleSqliteModel extends BaseSqliteModel {
 
         for (Field f : this.getClass().getFields()) {
             // Only non-private fields annotated with {@link SqliteColumn} are recognized as columns in the database
-            if (f.getAnnotation(SqliteColumn.class) != null && !Modifier.isPrivate(f.getModifiers())) {
+            if (f.getAnnotation(SqliteColumn.class) != null && Modifier.isPublic(f.getModifiers())) {
                 fields.add(f);
             }
         }

@@ -15,21 +15,21 @@ public class SaleTransactionModel extends SimpleSqliteModel {
     public static final String TABLE_SALE_TRANSACTION = "Sale Transaction";
 
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_LISTING_ID = "id";
-    public static final String COLUMN_BUYER_ID = "id";
-    public static final String COLUMN_DATE = "id";
-    public static final String COLUMN_AMOUNT = "id";
+    public static final String COLUMN_LISTING_ID = "listing_id";
+    public static final String COLUMN_BUYER_ID = "buyer_id";
+    public static final String COLUMN_DATE = "date";
+    public static final String COLUMN_AMOUNT = "amount";
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_ID, primaryKey = true)
-    protected long id;
+    public Long id;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_LISTING_ID)
     @SqliteForeignKey(table = PropertyListingModel.class, column = "id")
-    public long listingId;
+    public Long listingId;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BUYER_ID)
     @SqliteForeignKey(table = CustomerModel.class, column = "id")
-    public long buyerId;
+    public Long buyerId;
 
     @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_DATE)
     public Date date;

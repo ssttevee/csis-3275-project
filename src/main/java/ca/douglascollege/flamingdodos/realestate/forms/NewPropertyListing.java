@@ -1,13 +1,13 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
-import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.database.exceptions.DatabaseException;
+import ca.douglascollege.flamingdodos.database.interfaces.IDatabaseCursor;
 import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.CustomerModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import org.tmatesoft.sqljet.core.SqlJetException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,24 +51,22 @@ public class NewPropertyListing extends BaseForm {
         try {
             NewCenturyDatabase db = NewCenturyDatabase.getInstance();
 
-            BaseService<PropertyListingModel> propertyListingService = db.getPropertyListingService();
-            BaseService<AgentModel> agentService = db.getAgentService();
-            BaseService<CustomerModel> customerService = db.getCustomerService();
-
-            for (AgentModel agent : agentService.getAll()) {
-                agentsComboBox.addItem(agent);
+            IDatabaseCursor<AgentModel> agentsCursor = db.getAll(AgentModel.class);
+            while (agentsCursor.hasNext()) {
+                agentsComboBox.addItem(agentsCursor.next());
             }
+            agentsCursor.close();
 
             if (listing == null) {
-                mListing = propertyListingService.newModel();
+                mListing = new PropertyListingModel();
                 setTitle("New Listing");
             } else {
                 mListing = listing;
 
                 setTitle(mListing.toString());
 
-                agentsComboBox.setSelectedItem(mListing.getAgent(agentService));
-                customerNameTextBox.setText(mListing.getCustomer(customerService).toString());
+                agentsComboBox.setSelectedItem(db.lookup(AgentModel.class, mListing.agentId));
+                customerNameTextBox.setText(db.lookup(CustomerModel.class, mListing.customerId).toString());
                 askingPriceTextBox.setText("" + mListing.askingPrice);
                 propertyTypeComboBox.setSelectedItem(mListing.propertyType);
                 buildingTypeComboBox.setSelectedItem(mListing.buildingType);
@@ -86,7 +84,7 @@ public class NewPropertyListing extends BaseForm {
                 yearBuiltTextBox.setText(String.valueOf(mListing.buildYear));
             }
             mCallback = callback;
-        } catch (SqlJetException e) {
+        } catch (DatabaseException e) {
             e.printStackTrace();
         }
 
@@ -126,21 +124,21 @@ public class NewPropertyListing extends BaseForm {
                 }
 
                 try {
-                    mListing.bathroomCount = Integer.parseInt(bathroomCountTextBox.getText());
+                    mListing.bathroomCount = Long.parseLong(bathroomCountTextBox.getText());
                 } catch (NumberFormatException e) {
                     JOptionPane.showMessageDialog(null, "Bathroom count must be a number");
                     return;
                 }
 
                 try {
-                    mListing.bedroomCount = Integer.parseInt(bedroomCountTextBox.getText());
+                    mListing.bedroomCount = Long.parseLong(bedroomCountTextBox.getText());
                 } catch (NumberFormatException e) {
                     JOptionPane.showMessageDialog(null, "Bedroom count must be a number");
                     return;
                 }
 
                 try {
-                    mListing.buildYear = Integer.parseInt(yearBuiltTextBox.getText());
+                    mListing.buildYear = Long.parseLong(yearBuiltTextBox.getText());
                 } catch (NumberFormatException e) {
                     JOptionPane.showMessageDialog(null, "Build year must be a number");
                     return;
@@ -150,8 +148,7 @@ public class NewPropertyListing extends BaseForm {
                 mListing.listDate = new Date(System.currentTimeMillis());
 
                 try {
-                    BaseService<CustomerModel> customerService = NewCenturyDatabase.getInstance().getCustomerService();
-                    CustomerModel customerModel = customerService.newModel();
+                    CustomerModel customerModel = new CustomerModel();
                     String name = customerNameTextBox.getText();
                     String[] parts = name.split(Pattern.quote(" "));
                     customerModel.firstName = parts[0];
@@ -159,10 +156,8 @@ public class NewPropertyListing extends BaseForm {
                     if (parts.length > 1)
                         customerModel.lastName = parts[1];
 
-                    customerService.save(customerModel);
-
-                    mListing.customerId = customerModel.getRowId();
-                } catch (SqlJetException e) {
+                    mListing.customerId = (long) NewCenturyDatabase.getInstance().insert(null, customerModel);
+                } catch (DatabaseException e) {
                     e.printStackTrace();
                     return;
                 }

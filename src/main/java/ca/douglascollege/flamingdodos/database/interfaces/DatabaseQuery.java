@@ -1,25 +1,16 @@
 package ca.douglascollege.flamingdodos.database.interfaces;
 
 public class DatabaseQuery {
-    private Class<? extends IDatabaseModel> mModelClass;
-
     private IDatabaseQueryFilter mFilter;
+    private int mLimit = -1;
 
-    /**
-     *
-     * @param modelClass The model class
-     */
-    public DatabaseQuery(Class<? extends IDatabaseModel> modelClass) {
-        mModelClass = modelClass;
+    public DatabaseQuery() {
+
     }
 
-    private DatabaseQuery(DatabaseQuery q) {
-        mModelClass = q.mModelClass;
+    public DatabaseQuery(DatabaseQuery q) {
         mFilter = q.mFilter;
-    }
-
-    public Class<? extends IDatabaseModel> getModelClass() {
-        return mModelClass;
+        mLimit = q.mLimit;
     }
 
     public IDatabaseQueryFilter getFilter() {
@@ -31,5 +22,20 @@ public class DatabaseQuery {
         query.mFilter = filter;
 
         return query;
+    }
+
+    public int getLimit() {
+        return mLimit;
+    }
+
+    public DatabaseQuery setLimit(int limit) {
+        DatabaseQuery query = new DatabaseQuery(this);
+        query.mLimit = limit;
+
+        return query;
+    }
+
+    public void decrementLimit() {
+        mLimit--;
     }
 }
