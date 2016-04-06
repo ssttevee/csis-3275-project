@@ -1,15 +1,11 @@
 package ca.douglascollege.flamingdodos.realestate.data;
 
+import ca.douglascollege.flamingdodos.database.exceptions.DatabaseException;
+import ca.douglascollege.flamingdodos.database.sqlite.SqliteDatabase;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.CustomerModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
-import ca.douglascollege.flamingdodos.realestate.data.services.AgentService;
-import ca.douglascollege.flamingdodos.database.services.BaseService;
-import ca.douglascollege.flamingdodos.realestate.data.services.CustomerService;
-import ca.douglascollege.flamingdodos.realestate.data.services.PropertyListingService;
-import ca.douglascollege.flamingdodos.realestate.data.services.SaleTransactionService;
-import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 import java.io.*;
@@ -18,29 +14,26 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewCenturyDatabase {
+public class NewCenturyDatabase extends SqliteDatabase {
     private static NewCenturyDatabase instance;
 
-    public static NewCenturyDatabase getInstance() throws SqlJetException {
+    public static NewCenturyDatabase getInstance() throws DatabaseException {
         if (instance == null)
             instance = new NewCenturyDatabase();
 
         return instance;
     }
 
-    public static NewCenturyDatabase getTestInstance() throws SqlJetException {
+    public static NewCenturyDatabase getTestInstance() throws DatabaseException {
         return new NewCenturyDatabase(SqlJetDb.IN_MEMORY);
     }
 
     public static final String DATABASE_PATH =
             System.getProperty("user.home") + "/.flamingdodos/new-century-realty/data.bin";
 
-    private SqlJetDb mDatabase;
-
-    private NewCenturyDatabase(File file) throws SqlJetException {
+    private NewCenturyDatabase(File file) throws DatabaseException {
+        super(file);
         boolean newdb = !file.exists();
-
-        mDatabase = SqlJetDb.open(file, true);
 
         if (newdb) {
             try {
@@ -51,35 +44,11 @@ public class NewCenturyDatabase {
         }
     }
 
-    private NewCenturyDatabase() throws SqlJetException {
+    private NewCenturyDatabase() throws DatabaseException {
         this(new File(DATABASE_PATH));
     }
 
-    public BaseService<AgentModel> getAgentService() {
-        return new AgentService(mDatabase);
-    }
-
-    public BaseService<CustomerModel> getCustomerService() {
-        return new CustomerService(mDatabase);
-    }
-
-    public BaseService<PropertyListingModel> getPropertyListingService() {
-        return new PropertyListingService(mDatabase);
-    }
-
-    public BaseService<SaleTransactionModel> getSaleTransactionService() {
-        return new SaleTransactionService(mDatabase);
-    }
-
-    public void commit() throws SqlJetException {
-        mDatabase.commit();
-    }
-
-    public void close() throws SqlJetException {
-        mDatabase.close();
-    }
-
-    protected void initialize() throws IOException, SqlJetException {
+    protected void initialize() throws IOException, DatabaseException {
         InputStream is = getClass().getClassLoader().getResourceAsStream("generated_names.csv");
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
@@ -120,12 +89,6 @@ public class NewCenturyDatabase {
             data.add(lineData.toArray(new String[lineData.size()]));
         }
 
-        // create services
-        BaseService<AgentModel> agentService = getAgentService();
-        BaseService<CustomerModel> customerService = getCustomerService();
-        BaseService<PropertyListingModel> propertyListingService = getPropertyListingService();
-        BaseService<SaleTransactionModel> saleTransactionService = getSaleTransactionService();
-
         int pId = 0;
 
         // add agents
@@ -133,13 +96,13 @@ public class NewCenturyDatabase {
         for (int i = 0; i < 5; i++) {
             String[] person = data.get(pId++);
 
-            AgentModel agent = agentService.newModel();
+            AgentModel agent = new AgentModel();
             agent.firstName = person[0];
             agent.lastName = person[1];
 
             agent.hireDate = getRandomDate(Timestamp.valueOf("2016-01-01 00:00:00").getTime(), System.currentTimeMillis());
 
-            agentService.save(agent);
+            insert(null, agent);
 
             agents[i] = agent;
         }
@@ -149,13 +112,13 @@ public class NewCenturyDatabase {
         for (int i = 0; i < 20; i++) {
             String[] person = data.get(pId++);
 
-            CustomerModel customer = customerService.newModel();
+            CustomerModel customer = new CustomerModel();
             customer.firstName = person[0];
             customer.lastName = person[1];
 
-            customerService.save(customer);
+            insert(null, customer);
 
-            PropertyListingModel propertyListing = propertyListingService.newModel();
+            PropertyListingModel propertyListing = new PropertyListingModel();
 
             propertyListing.agentId = agents[(int) (Math.random() * 5)].getRowId();
             propertyListing.customerId = customer.getRowId();
@@ -171,7 +134,7 @@ public class NewCenturyDatabase {
             propertyListing.status = PropertyListingModel.PropertyStatus.FOR_SALE;
             propertyListing.listDate = getRandomDate(Timestamp.valueOf("2016-01-01 00:00:00").getTime(), System.currentTimeMillis());
 
-            propertyListingService.save(propertyListing);
+            insert(null, propertyListing);
 
             listings[i] = propertyListing;
         }
@@ -183,29 +146,27 @@ public class NewCenturyDatabase {
             if (listing.status == PropertyListingModel.PropertyStatus.FOR_SALE) {
                 String[] person = data.get(pId++);
 
-                CustomerModel customer = customerService.newModel();
+                CustomerModel customer = new CustomerModel();
                 customer.firstName = person[0];
                 customer.lastName = person[1];
 
-                customerService.save(customer);
+                insert(null, customer);
 
-                SaleTransactionModel txn = saleTransactionService.newModel();
+                SaleTransactionModel txn = new SaleTransactionModel();
                 txn.listingId = listing.getRowId();
                 txn.buyerId = customer.getRowId();
                 txn.amount = listing.askingPrice * (1 + Math.random() * 0.5);
                 txn.date = getRandomDate(listing.listDate.getTime(), System.currentTimeMillis());
 
-                saleTransactionService.save(txn);
+                insert(null, txn);
 
                 listing.status = PropertyListingModel.PropertyStatus.SOLD;
 
-                propertyListingService.save(listing);
+                insert(listing.getRowId(), listing);
 
                 soldListings++;
             }
         }
-
-        commit();
     }
 
     private Date getRandomDate(long start, long end) {

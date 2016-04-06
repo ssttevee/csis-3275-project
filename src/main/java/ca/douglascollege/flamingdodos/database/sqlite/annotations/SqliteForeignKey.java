@@ -1,7 +1,7 @@
-package ca.douglascollege.flamingdodos.database.annotations;
+package ca.douglascollege.flamingdodos.database.sqlite.annotations;
 
-import ca.douglascollege.flamingdodos.database.models.BaseModel;
-import ca.douglascollege.flamingdodos.database.models.SimpleModel;
+import ca.douglascollege.flamingdodos.database.sqlite.models.BaseSqliteModel;
+import ca.douglascollege.flamingdodos.database.sqlite.models.SimpleSqliteModel;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- *     The <code>SqliteForeignKey</code> tells the {@link SimpleModel}
+ *     The <code>SqliteForeignKey</code> tells the {@link SimpleSqliteModel}
  *     that the column that field represents is also a foreign key
  * </p>
  * <p>
@@ -21,9 +21,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface SqliteForeignKey {
     /**
-     * A subclass of {@link BaseModel}
+     * A subclass of {@link BaseSqliteModel}
      */
-    Class<? extends BaseModel> table();
+    Class<? extends BaseSqliteModel> table();
 
     /**
      * The name of the column in the table

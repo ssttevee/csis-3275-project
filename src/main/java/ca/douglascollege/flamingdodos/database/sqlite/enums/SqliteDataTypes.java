@@ -1,6 +1,6 @@
-package ca.douglascollege.flamingdodos.database.enums;
+package ca.douglascollege.flamingdodos.database.sqlite.enums;
 
-import ca.douglascollege.flamingdodos.database.annotations.SqliteColumn;
+import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteColumn;
 
 /**
  * This enum is used with {@link SqliteColumn} to identify the type of the column

@@ -1,7 +1,7 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
-import ca.douglascollege.flamingdodos.database.models.SimpleModel;
-import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.database.sqlite.models.SimpleSqliteModel;
+import ca.douglascollege.flamingdodos.database.sqlite.services.BaseService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class BadModelServiceTest {
         badModelService.newModel();
     }
 
-    private static class BadModel extends SimpleModel {
+    private static class BadModel extends SimpleSqliteModel {
         private BadModel() {}
     }
 }

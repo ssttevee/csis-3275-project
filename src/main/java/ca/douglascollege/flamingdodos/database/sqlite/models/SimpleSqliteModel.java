@@ -1,11 +1,8 @@
-package ca.douglascollege.flamingdodos.database.models;
+package ca.douglascollege.flamingdodos.database.sqlite.models;
 
-import ca.douglascollege.flamingdodos.database.annotations.SqliteColumn;
-import ca.douglascollege.flamingdodos.database.annotations.SqliteForeignKey;
-import ca.douglascollege.flamingdodos.database.enums.SqliteDataTypes;
+import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteColumn;
+import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteForeignKey;
 import ca.douglascollege.flamingdodos.realestate.utils.CaseTools;
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -18,7 +15,7 @@ import java.util.Map;
 
 /**
  * <p>
- * A Simple implementation of the {@link BaseModel}
+ * A Simple implementation of the {@link BaseSqliteModel}
  * </p>
  *
  * <p>
@@ -28,8 +25,8 @@ import java.util.Map;
  * <p>
  * Usage:
  * <pre><code>
- * public class PersonModel extends SimpleModel {
- *     &#64;SqliteColumn(value = SqliteDataTypes.Integer, primaryKey = true)
+ * public class PersonModel extends SimpleSqliteModel {
+ *     &#64;SqliteColumn(type = SqliteDataTypes.Integer, primaryKey = true)
  *     public long id;
  *
  *     &#64;SqliteColumn(SqliteDataTypes.Text)
@@ -51,74 +48,25 @@ import java.util.Map;
  * </code></pre>
  * </p>
  * <p>
- *     Note: The <code>id</code> field is implemented by {@link SimpleModel}, do not implement it yourself!
+ *     Note: The <code>id</code> field is implemented by {@link SimpleSqliteModel}, do not implement it yourself!
  * </p>
  */
-public abstract class SimpleModel extends BaseModel {
-    @SqliteColumn(value = SqliteDataTypes.Integer, primaryKey = true)
-    protected long id;
-
-    protected SimpleModel() {}
+public abstract class SimpleSqliteModel extends BaseSqliteModel {
+    protected SimpleSqliteModel() {}
 
     @Override
-    protected String getTableName() {
-        return this.getClass().getSimpleName();
-    }
-
-    @Override
-    protected String getCreateTableStatement() {
-        String createStmt = "CREATE TABLE \"" + mTableName + "\" (";
-
-        Map<String, SqliteForeignKey> fks = new HashMap<>();
-
-        for (Field f : getFields()) {
-            String name = CaseTools.camelToSnake(f.getName());
-
-            SqliteColumn column = f.getAnnotation(SqliteColumn.class);
-            createStmt += "\"" + name + "\" " + column.value().getName();
-
-            if (column.primaryKey()) createStmt += " PRIMARY KEY";
-
-            createStmt += ",";
-
-            SqliteForeignKey foreignKey = f.getAnnotation(SqliteForeignKey.class);
-            if (foreignKey != null) {
-                fks.put(name, foreignKey);
-            }
-        }
-
-        for (Map.Entry<String, SqliteForeignKey> entry : fks.entrySet()) {
-            String name = entry.getKey();
-            SqliteForeignKey foreignKey = entry.getValue();
-
-            try {
-                createStmt += " FOREIGN KEY(\"" + name + "\") REFERENCES " +
-                        "\"" + foreignKey.table().newInstance().getTableName() + "\" (\"" + foreignKey.column() + "\"),";
-            } catch (InstantiationException e) {
-                if (Modifier.isAbstract(foreignKey.table().getModifiers())) {
-                    throw new AssertionError("Foreign Key model class must not be abstract", e);
-                }
-
-                throw new AssertionError(foreignKey.table().getName() + " does not have a nullary constructor", e);
-            } catch (IllegalAccessException e) {
-                throw new AssertionError(foreignKey.table().getName() + " nullary constructor is inaccessible", e);
-            }
-        }
-
-        return createStmt.substring(0, createStmt.length() - 1) + ");";
-    }
-
-    @Override
-    protected Map<String, Object> toDataMap() {
+    public Map<String, Object> export() {
         Map<String, Object> dataMap = new HashMap<>();
 
         for (Field f : getFields()) {
             try {
                 Object value = f.get(this);
-                if (f.getType().isEnum()) {
-                    value = value.toString();
-                } else if (f.getType() == Date.class) {
-                    value = ((Date) value).getTime();
+                 if (value != null) {
+                    if (f.getType().isEnum()) {
+                        value = value.toString();
+                    } else if (f.getType() == Date.class) {
+                        value = ((Date) value).getTime();
+                    }
                 }
 
                 dataMap.put(CaseTools.camelToSnake(f.getName()), value);
@@ -132,10 +80,21 @@ public abstract class SimpleModel extends BaseModel {
     }
 
     @Override
-    protected void fromCursor(ISqlJetCursor readCursor) throws SqlJetException {
+    public void load(Map<String, Object> data) {
         for (Field f : getFields()) {
             try {
-                Object colValue = readCursor.getValue(CaseTools.camelToSnake(f.getName()));
+                String colName = f.getAnnotation(SqliteColumn.class).name();
+                if (colName.length() <= 0) {
+                    colName = CaseTools.camelToSnake(f.getName());
+                }
+
+                if (!data.containsValue(colName))
+                    continue;
+
+                Object colValue = data.get(colName);
+
+                if (colValue == null)
+                    continue;
 
                 if (f.getType().isEnum()) {
                     colValue = (f.getType()).getMethod("valueOf", String.class).invoke(null, (String) colValue);

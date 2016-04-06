@@ -1,8 +1,8 @@
-package ca.douglascollege.flamingdodos.database.models;
+package ca.douglascollege.flamingdodos.database.sqlite.models;
 
-import ca.douglascollege.flamingdodos.database.annotations.SqliteColumn;
-import ca.douglascollege.flamingdodos.database.annotations.SqliteForeignKey;
-import ca.douglascollege.flamingdodos.database.enums.SqliteDataTypes;
+import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteColumn;
+import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteForeignKey;
+import ca.douglascollege.flamingdodos.database.sqlite.enums.SqliteDataTypes;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,36 +24,36 @@ public class BadSimpleModelTest {
 
     @Test(expected = AssertionError.class)
     public void testForeignKeyWithAbstractModel() throws Exception {
-        new SimpleModel() {
-            @SqliteColumn(value = SqliteDataTypes.Integer)
+        new SimpleSqliteModel() {
+            @SqliteColumn(type = SqliteDataTypes.Integer)
             @SqliteForeignKey(table = SimpleModelSansPublicNullaryConstructor.class, column = "id")
             public long sansPublicNullaryId;
-        }.getCreateTableStatement();
+        }.getCreateTableStatement(mDatabase);
     }
 
     @Test(expected = AssertionError.class)
     public void testForeignKeySansNullaryConstructor() throws Exception {
-        new SimpleModel() {
-            @SqliteColumn(value = SqliteDataTypes.Integer)
-            @SqliteForeignKey(table = SimpleModel.class, column = "id")
+        new SimpleSqliteModel() {
+            @SqliteColumn(type = SqliteDataTypes.Integer)
+            @SqliteForeignKey(table = SimpleSqliteModel.class, column = "id")
             public long abstractId;
-        }.getCreateTableStatement();
+        }.getCreateTableStatement(mDatabase);
     }
 
     @Test(expected = AssertionError.class)
     public void testForeignKeySansPublicNullaryConstructor() throws Exception {
-        new SimpleModel() {
-            @SqliteColumn(value = SqliteDataTypes.Integer)
+        new SimpleSqliteModel() {
+            @SqliteColumn(type = SqliteDataTypes.Integer)
             @SqliteForeignKey(table = SimpleModelSansNullaryConstructor.class, column = "id")
             public long sansNullaryId;
-        }.getCreateTableStatement();
+        }.getCreateTableStatement(mDatabase);
     }
 
-    private static class SimpleModelSansNullaryConstructor extends SimpleModel {
+    private static class SimpleModelSansNullaryConstructor extends SimpleSqliteModel {
         public SimpleModelSansNullaryConstructor(Object obj) {}
     }
 
-    private static class SimpleModelSansPublicNullaryConstructor extends SimpleModel {
+    private static class SimpleModelSansPublicNullaryConstructor extends SimpleSqliteModel {
         private SimpleModelSansPublicNullaryConstructor() {}
     }
 }

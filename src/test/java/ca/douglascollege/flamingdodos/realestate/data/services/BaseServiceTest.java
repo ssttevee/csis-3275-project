@@ -1,8 +1,8 @@
 package ca.douglascollege.flamingdodos.realestate.data.services;
 
-import ca.douglascollege.flamingdodos.database.annotations.SqliteColumn;
-import ca.douglascollege.flamingdodos.database.models.BaseModel;
-import ca.douglascollege.flamingdodos.database.services.BaseService;
+import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteColumn;
+import ca.douglascollege.flamingdodos.database.sqlite.models.BaseSqliteModel;
+import ca.douglascollege.flamingdodos.database.sqlite.services.BaseService;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.CustomerModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
@@ -23,13 +23,13 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
-public class BaseServiceTest<T extends BaseModel> {
+public class BaseServiceTest<T extends BaseSqliteModel> {
     @Parameterized.Parameters(name = "{3}")
     public static Collection<Object[]> data() {
         List<Object[]> parameters = new ArrayList<>();
 
-        BaseModel evalModel;
-        BaseModel phonyModel;
+        BaseSqliteModel evalModel;
+        BaseSqliteModel phonyModel;
 
         {
             evalModel = new AgentModel();

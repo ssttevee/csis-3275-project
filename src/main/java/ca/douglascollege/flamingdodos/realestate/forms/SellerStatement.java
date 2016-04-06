@@ -1,21 +1,34 @@
 package ca.douglascollege.flamingdodos.realestate.forms;
 
+import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
+import ca.douglascollege.flamingdodos.realestate.generator.SellerStatementGenerator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class SellerStatement extends BaseForm {
+public class SellerStatement extends BaseOutputForm {
     private JTextArea commissionText;
     private JButton printButton;
     private JButton closeButton;
     private JPanel contentPane;
 
-    public SellerStatement() {
+    public SellerStatement(SaleTransactionModel transaction) {
         super("Seller Statement");
 
+        init(commissionText, new SellerStatementGenerator(transaction));
+
         setContentPane(contentPane);
+
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
     }
 
     {
