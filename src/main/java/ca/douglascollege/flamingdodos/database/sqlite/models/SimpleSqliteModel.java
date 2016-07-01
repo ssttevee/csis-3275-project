@@ -26,13 +26,13 @@ import java.util.Map;
  * Usage:
  * <pre><code>
  * public class PersonModel extends SimpleSqliteModel {
- *     &#64;SqliteColumn(type = SqliteDataTypes.Integer, primaryKey = true)
+ *     &#64;SqliteColumn(type = SqliteDataType.Integer, primaryKey = true)
  *     public long id;
  *
- *     &#64;SqliteColumn(SqliteDataTypes.Text)
+ *     &#64;SqliteColumn(SqliteDataType.Text)
  *     public String firstName;
  *
- *     &#64;SqliteColumn(SqliteDataTypes.Integer)
+ *     &#64;SqliteColumn(SqliteDataType.Integer)
  *     &#64;SqliteForeignKey(table = AnotherModel.class, column = "id")
  *     public long anotherId;
  * }
@@ -66,6 +66,8 @@ public abstract class SimpleSqliteModel extends BaseSqliteModel {
                         value = value.toString();
                     } else if (f.getType() == Date.class) {
                         value = ((Date) value).getTime();
+                    } else if (f.getType() == Boolean.class) {
+                        value = (Boolean) value ? 1 : 0;
                     }
                 }
 
@@ -100,6 +102,8 @@ public abstract class SimpleSqliteModel extends BaseSqliteModel {
                     colValue = (f.getType()).getMethod("valueOf", String.class).invoke(null, (String) colValue);
                 } else if (f.getType() == Date.class) {
                     colValue = new Date((Long) colValue);
+                } else if (f.getType() == Boolean.class) {
+                    colValue = colValue == 1;
                 }
 
                 f.set(this, colValue);

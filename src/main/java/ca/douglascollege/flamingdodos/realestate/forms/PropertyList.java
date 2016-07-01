@@ -3,9 +3,12 @@ package ca.douglascollege.flamingdodos.realestate.forms;
 import ca.douglascollege.flamingdodos.database.exceptions.DatabaseException;
 import ca.douglascollege.flamingdodos.database.interfaces.DatabaseQuery;
 import ca.douglascollege.flamingdodos.database.interfaces.IDatabaseCursor;
+import ca.douglascollege.flamingdodos.database.interfaces.IDatabaseQueryFilter;
+import ca.douglascollege.flamingdodos.database.sqlite.util.CompositeFilter;
 import ca.douglascollege.flamingdodos.database.sqlite.util.NumericPropertyFilter;
 import ca.douglascollege.flamingdodos.realestate.data.NewCenturyDatabase;
 import ca.douglascollege.flamingdodos.realestate.data.models.AgentModel;
+import ca.douglascollege.flamingdodos.realestate.data.models.CustomerModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.PropertyListingModel;
 import ca.douglascollege.flamingdodos.realestate.data.models.SaleTransactionModel;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -29,63 +32,72 @@ public class PropertyList extends BaseForm {
     private JButton buyerStatementButton;
     private JButton sellerStatementButton;
     private JButton closeButton;
-    private JList list1;
+    private JList<PropertyListingModel> list1;
     private JLabel propertyTypeText;
     private JLabel listingPriceText;
     private JPanel propertyOutputPanel;
     private JPanel containerPanel;
     private JButton commissionSlipButton;
+    private JLabel agentLabel;
+    private JLabel customerLabel;
 
-    private List<PropertyListingModel> mProperties = new ArrayList<>();
-    private IPropertyListingDataSource mDataSource;
+    private DatabaseQuery mQuery = new DatabaseQuery();
+    private DefaultListModel<PropertyListingModel> propertyListModel;
+    private IPropertyListingFilter mDataSource = null;
 
-    public PropertyList() {
-        this("", new IPropertyListingDataSource() {
-            @Override
-            public PropertyListingModel[] getPropertyListings() throws DatabaseException {
-                List<PropertyListingModel> ret = new ArrayList<>();
+    public PropertyList(String name, IPropertyListingFilter dataSource) {
+        this(dataSource);
 
-                IDatabaseCursor<PropertyListingModel> cursor = NewCenturyDatabase.getInstance().getAll(PropertyListingModel.class);
-                while (cursor.hasNext()) {
-                    ret.add(cursor.next());
-                }
-
-                return (PropertyListingModel[]) ret.toArray();
-            }
-        });
-
-        setTitle("All Property Listings");
+        setTitle(name + "'s Property Listings");
     }
 
-    public PropertyList(String name, IPropertyListingDataSource dataSource) {
-        super(name + "'s Property Listings");
+    public PropertyList() {
+        this(null);
+    }
+
+    public PropertyList(IPropertyListingFilter dataSource) {
+        super("All Property Listings");
 
         setContentPane(contentPane);
         mDataSource = dataSource;
 
         list1.addListSelectionListener(new ListSelectionListener() {
             @Override
-            public void valueChanged(ListSelectionEvent e) {
-                JList source = (JList) e.getSource();
-                PropertyListingModel model = (PropertyListingModel) source.getSelectedValue();
+            public void valueChanged(ListSelectionEvent evt) {
+                JList source = (JList) evt.getSource();
+                PropertyListingModel property = (PropertyListingModel) source.getSelectedValue();
 
-                if (model == null) {
+                if (property == null) {
                     propertyTypeText.setText("");
                     listingPriceText.setText("");
+                    customerLabel.setText("");
+                    agentLabel.setText("");
 
                     buyerStatementButton.setEnabled(false);
                     sellerStatementButton.setEnabled(false);
                     commissionSlipButton.setEnabled(false);
                     editButton.setEnabled(false);
+                    deleteButton.setEnabled(false);
                     return;
                 } else {
                     editButton.setEnabled(true);
+                    deleteButton.setEnabled(true);
 
-                    propertyTypeText.setText(model.propertyType.toString());
-                    listingPriceText.setText(String.format("$%.2f", model.askingPrice));
+                    propertyTypeText.setText(property.propertyType.toString());
+                    listingPriceText.setText(String.format("$%.2f", property.askingPrice));
+                    try {
+                        customerLabel.setText(NewCenturyDatabase.getInstance().lookup(CustomerModel.class, property.customerId).toString());
+                    } catch (DatabaseException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        agentLabel.setText(NewCenturyDatabase.getInstance().lookup(AgentModel.class, property.agentId).toString());
+                    } catch (DatabaseException e) {
+                        e.printStackTrace();
+                    }
                 }
 
-                if (model.status == PropertyListingModel.PropertyStatus.SOLD) {
+                if (property.status == PropertyListingModel.PropertyStatus.SOLD) {
                     buyerStatementButton.setEnabled(true);
                     sellerStatementButton.setEnabled(true);
                     commissionSlipButton.setEnabled(true);
@@ -120,7 +132,7 @@ public class PropertyList extends BaseForm {
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                new NewPropertyListing((PropertyListingModel) list1.getSelectedValue(), new NewPropertyListing.AddListingCallback() {
+                new NewPropertyListing(list1.getSelectedValue(), new NewPropertyListing.AddListingCallback() {
                     @Override
                     public void addListing(PropertyListingModel listing) {
                         try {
@@ -138,7 +150,7 @@ public class PropertyList extends BaseForm {
         buyerStatementButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                PropertyListingModel model = (PropertyListingModel) list1.getSelectedValue();
+                PropertyListingModel model = list1.getSelectedValue();
 
                 try {
                     new BuyerStatement(getRelatedSaleTransaction(model)).open();
@@ -187,17 +199,7 @@ public class PropertyList extends BaseForm {
             }
         });
 
-        list1.setModel(new AbstractListModel<PropertyListingModel>() {
-            @Override
-            public int getSize() {
-                return mProperties.size();
-            }
-
-            @Override
-            public PropertyListingModel getElementAt(int index) {
-                return mProperties.get(index);
-            }
-        });
+        list1.setModel(propertyListModel = new DefaultListModel<>());
         updateList();
     }
 
@@ -233,12 +235,23 @@ public class PropertyList extends BaseForm {
 
     public void updateList() {
         try {
-            IDatabaseCursor<PropertyListingModel> cursor = NewCenturyDatabase.getInstance().getAll(PropertyListingModel.class);
+            List<IDatabaseQueryFilter> filters = new ArrayList<>();
 
+            if (mDataSource != null)
+                filters.add(mDataSource.getFilter());
+
+            if (mQuery.getFilter() != null)
+                filters.add(mQuery.getFilter());
+
+            filters.add(new NumericPropertyFilter(AgentModel.COLUMN_DELETED, NumericPropertyFilter.Operator.EQUAL, 0));
+
+            propertyListModel.clear();
+            IDatabaseCursor<PropertyListingModel> cursor = NewCenturyDatabase.getInstance().execute(PropertyListingModel.class, mQuery.setFilter(new CompositeFilter(CompositeFilter.Operator.AND, filters)));
             while (cursor.hasNext()) {
-                PropertyListingModel property = cursor.next();
-                mProperties.add(property);
+                propertyListModel.addElement(cursor.next());
             }
+
+            pack();
         } catch (DatabaseException e) {
             e.printStackTrace();
         }
@@ -275,6 +288,7 @@ public class PropertyList extends BaseForm {
         editButton.setText("Edit");
         panel2.add(editButton);
         deleteButton = new JButton();
+        deleteButton.setEnabled(false);
         deleteButton.setText("Delete");
         panel2.add(deleteButton);
         final Spacer spacer1 = new Spacer();
@@ -299,27 +313,6 @@ public class PropertyList extends BaseForm {
         defaultListModel1.addElement("Property 10");
         list1.setModel(defaultListModel1);
         containerPanel.add(list1, new GridConstraints(0, 0, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        containerPanel.add(panel3, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JPanel panel4 = new JPanel();
-        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel3.add(panel4, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JLabel label1 = new JLabel();
-        label1.setText("Property Type");
-        panel4.add(label1);
-        propertyTypeText = new JLabel();
-        propertyTypeText.setText("");
-        panel4.add(propertyTypeText);
-        final JPanel panel5 = new JPanel();
-        panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel3.add(panel5, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JLabel label2 = new JLabel();
-        label2.setText("Listing Price:");
-        panel5.add(label2);
-        listingPriceText = new JLabel();
-        listingPriceText.setText("");
-        panel5.add(listingPriceText);
         propertyOutputPanel = new JPanel();
         propertyOutputPanel.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, 0, false, true));
         containerPanel.add(propertyOutputPanel, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -335,6 +328,47 @@ public class PropertyList extends BaseForm {
         commissionSlipButton.setEnabled(false);
         commissionSlipButton.setText("Commission Slip");
         propertyOutputPanel.add(commissionSlipButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(5, 1, new Insets(0, 0, 0, 0), -1, -1));
+        containerPanel.add(panel3, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel3.add(panel4, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("Property Type:");
+        panel4.add(label1);
+        propertyTypeText = new JLabel();
+        propertyTypeText.setText("");
+        panel4.add(propertyTypeText);
+        final Spacer spacer2 = new Spacer();
+        panel3.add(spacer2, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel3.add(panel5, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JLabel label2 = new JLabel();
+        label2.setText("Listing Price:");
+        panel5.add(label2);
+        listingPriceText = new JLabel();
+        listingPriceText.setText("");
+        panel5.add(listingPriceText);
+        final JPanel panel6 = new JPanel();
+        panel6.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel3.add(panel6, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JLabel label3 = new JLabel();
+        label3.setText("Agent:");
+        panel6.add(label3);
+        agentLabel = new JLabel();
+        agentLabel.setText("");
+        panel6.add(agentLabel);
+        final JPanel panel7 = new JPanel();
+        panel7.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel3.add(panel7, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JLabel label4 = new JLabel();
+        label4.setText("Customer:");
+        panel7.add(label4);
+        customerLabel = new JLabel();
+        customerLabel.setText("");
+        panel7.add(customerLabel);
     }
 
     /**
@@ -344,8 +378,8 @@ public class PropertyList extends BaseForm {
         return contentPane;
     }
 
-    public interface IPropertyListingDataSource {
-        PropertyListingModel[] getPropertyListings() throws DatabaseException;
+    public interface IPropertyListingFilter {
+        IDatabaseQueryFilter getFilter() throws DatabaseException;
     }
 
 }

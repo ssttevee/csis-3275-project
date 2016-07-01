@@ -3,7 +3,7 @@ package ca.douglascollege.flamingdodos.realestate.data.models;
 import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteColumn;
 import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteForeignKey;
 import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteTable;
-import ca.douglascollege.flamingdodos.database.sqlite.enums.SqliteDataTypes;
+import ca.douglascollege.flamingdodos.database.sqlite.enums.SqliteDataType;
 import ca.douglascollege.flamingdodos.database.sqlite.models.SimpleSqliteModel;
 
 import java.sql.Date;
@@ -19,23 +19,27 @@ public class SaleTransactionModel extends SimpleSqliteModel {
     public static final String COLUMN_BUYER_ID = "buyer_id";
     public static final String COLUMN_DATE = "date";
     public static final String COLUMN_AMOUNT = "amount";
+    public static final String COLUMN_DELETED = "deleted";
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_ID, primaryKey = true)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_ID, primaryKey = true)
     public Long id;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_LISTING_ID)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_LISTING_ID)
     @SqliteForeignKey(table = PropertyListingModel.class, column = "id")
     public Long listingId;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BUYER_ID)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_BUYER_ID)
     @SqliteForeignKey(table = CustomerModel.class, column = "id")
     public Long buyerId;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_DATE)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_DATE)
     public Date date;
 
-    @SqliteColumn(type = SqliteDataTypes.Real, name = COLUMN_AMOUNT)
+    @SqliteColumn(type = SqliteDataType.Real, name = COLUMN_AMOUNT)
     public double amount;
+
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_DELETED)
+    public Boolean deleted = false;
 
     public double getAgentFee() {
         double fee;

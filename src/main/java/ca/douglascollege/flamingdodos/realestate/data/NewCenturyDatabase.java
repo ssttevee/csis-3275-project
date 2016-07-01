@@ -13,6 +13,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class NewCenturyDatabase extends SqliteDatabase {
     private static NewCenturyDatabase instance;
@@ -35,6 +36,7 @@ public class NewCenturyDatabase extends SqliteDatabase {
         super(file);
     }
 
+    @Override
     protected void onCreate() throws DatabaseException {
         try {
             initialize();
@@ -98,7 +100,7 @@ public class NewCenturyDatabase extends SqliteDatabase {
             AgentModel agent = new AgentModel();
             agent.firstName = person[0];
             agent.lastName = person[1];
-
+            agent.phoneNumber = generatePhoneNumber();
             agent.hireDate = getRandomDate(Timestamp.valueOf("2016-01-01 00:00:00").getTime(), System.currentTimeMillis());
 
             insert(null, agent);
@@ -114,6 +116,7 @@ public class NewCenturyDatabase extends SqliteDatabase {
             CustomerModel customer = new CustomerModel();
             customer.firstName = person[0];
             customer.lastName = person[1];
+            customer.phoneNumber = generatePhoneNumber();
 
             insert(null, customer);
 
@@ -148,6 +151,7 @@ public class NewCenturyDatabase extends SqliteDatabase {
                 CustomerModel customer = new CustomerModel();
                 customer.firstName = person[0];
                 customer.lastName = person[1];
+                customer.phoneNumber = generatePhoneNumber();
 
                 insert(null, customer);
 
@@ -168,6 +172,23 @@ public class NewCenturyDatabase extends SqliteDatabase {
         }
 
         commit();
+    }
+
+    private String generatePhoneNumber() {
+        Random random = new Random();
+
+        String ret = "(";
+        for (int i = 0; i < 10; i++) {
+            ret += String.valueOf(random.nextInt(10));
+
+            if (i == 2) {
+                ret += ") ";
+            } else if (i == 5) {
+                ret += "-";
+            }
+        }
+
+        return ret;
     }
 
     private Date getRandomDate(long start, long end) {

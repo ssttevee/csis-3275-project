@@ -5,7 +5,7 @@ import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteColumn;
 /**
  * This enum is used with {@link SqliteColumn} to identify the type of the column
  */
-public enum SqliteDataTypes {
+public enum SqliteDataType {
     Text("TEXT"),
     Integer("INTEGER"),
     Numeric("NUMERIC"),
@@ -17,7 +17,7 @@ public enum SqliteDataTypes {
      */
     private String mName;
 
-    SqliteDataTypes(String name) {
+    SqliteDataType(String name) {
         mName = name;
     }
 

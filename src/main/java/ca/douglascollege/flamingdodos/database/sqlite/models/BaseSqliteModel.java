@@ -12,7 +12,7 @@ import java.util.Map;
  * @author Steve Lam (hello@stevelam.ca)
  */
 public abstract class BaseSqliteModel implements IDatabaseModel {
-    private long mRowId;
+    private Long mRowId;
 
     @Override
     public abstract Map<String, Object> export();
@@ -21,7 +21,7 @@ public abstract class BaseSqliteModel implements IDatabaseModel {
      * Get the id of the model
      * @return the id of the model
      */
-    public long getRowId() {
+    public Long getRowId() {
         return mRowId;
     }
 

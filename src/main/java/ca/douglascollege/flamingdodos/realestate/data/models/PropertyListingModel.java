@@ -3,7 +3,7 @@ package ca.douglascollege.flamingdodos.realestate.data.models;
 import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteColumn;
 import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteForeignKey;
 import ca.douglascollege.flamingdodos.database.sqlite.annotations.SqliteTable;
-import ca.douglascollege.flamingdodos.database.sqlite.enums.SqliteDataTypes;
+import ca.douglascollege.flamingdodos.database.sqlite.enums.SqliteDataType;
 import ca.douglascollege.flamingdodos.database.sqlite.models.SimpleSqliteModel;
 
 import java.sql.Date;
@@ -28,6 +28,7 @@ public class PropertyListingModel extends SimpleSqliteModel {
     public static final String COLUMN_BUILD_YEAR = "build_year";
     public static final String COLUMN_STATUS = "status";
     public static final String COLUMN_LIST_DATE = "list_date";
+    public static final String COLUMN_DELETED = "deleted";
 
     public enum PropertyType {
         RESIDENTIAL, COMMERCIAL, OTHER
@@ -41,49 +42,52 @@ public class PropertyListingModel extends SimpleSqliteModel {
         DRAFT, FOR_SALE, SOLD
     }
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_ID, primaryKey = true)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_ID, primaryKey = true)
     public Long id;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_AGENT_ID)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_AGENT_ID)
     @SqliteForeignKey(table = AgentModel.class, column = "id")
     public Long agentId;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_CUSTOMER_ID)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_CUSTOMER_ID)
     @SqliteForeignKey(table = CustomerModel.class, column = "id")
     public Long customerId;
 
-    @SqliteColumn(type = SqliteDataTypes.Real, name = COLUMN_ASKING_PRICE)
+    @SqliteColumn(type = SqliteDataType.Real, name = COLUMN_ASKING_PRICE)
     public double askingPrice;
 
-    @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_PROPERTY_TYPE)
+    @SqliteColumn(type = SqliteDataType.Text, name = COLUMN_PROPERTY_TYPE)
     public PropertyType propertyType;
 
-    @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_BUILDING_TYPE)
+    @SqliteColumn(type = SqliteDataType.Text, name = COLUMN_BUILDING_TYPE)
     public BuildingType buildingType;
 
-    @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_ADDRESS)
+    @SqliteColumn(type = SqliteDataType.Text, name = COLUMN_ADDRESS)
     public String address;
 
-    @SqliteColumn(type = SqliteDataTypes.Real, name = COLUMN_FLOOR_AREA)
+    @SqliteColumn(type = SqliteDataType.Real, name = COLUMN_FLOOR_AREA)
     public double floorArea;
 
-    @SqliteColumn(type = SqliteDataTypes.Real, name = COLUMN_LAND_AREA)
+    @SqliteColumn(type = SqliteDataType.Real, name = COLUMN_LAND_AREA)
     public double landArea;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BEDROOM_COUNT)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_BEDROOM_COUNT)
     public Long bedroomCount;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BATHROOM_COUNT)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_BATHROOM_COUNT)
     public Long bathroomCount;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_BUILD_YEAR)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_BUILD_YEAR)
     public Long buildYear;
 
-    @SqliteColumn(type = SqliteDataTypes.Text, name = COLUMN_STATUS)
+    @SqliteColumn(type = SqliteDataType.Text, name = COLUMN_STATUS)
     public PropertyStatus status;
 
-    @SqliteColumn(type = SqliteDataTypes.Integer, name = COLUMN_LIST_DATE)
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_LIST_DATE)
     public Date listDate;
+
+    @SqliteColumn(type = SqliteDataType.Integer, name = COLUMN_DELETED)
+    public Boolean deleted = false;
 
     @Override
     public String toString() {

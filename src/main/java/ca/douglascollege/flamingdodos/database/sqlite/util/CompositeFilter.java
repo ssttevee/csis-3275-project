@@ -2,6 +2,7 @@ package ca.douglascollege.flamingdodos.database.sqlite.util;
 
 import ca.douglascollege.flamingdodos.database.interfaces.IDatabaseQueryFilter;
 
+import java.util.List;
 import java.util.Map;
 
 public class CompositeFilter implements IDatabaseQueryFilter {
@@ -15,6 +16,11 @@ public class CompositeFilter implements IDatabaseQueryFilter {
 
     public CompositeFilter(Operator operator, IDatabaseQueryFilter... filters) {
         mFilters = filters;
+        mOperator = operator;
+    }
+
+    public CompositeFilter(Operator operator, List<IDatabaseQueryFilter> filters) {
+        mFilters = filters.toArray(new IDatabaseQueryFilter[filters.size()]);
         mOperator = operator;
     }
 

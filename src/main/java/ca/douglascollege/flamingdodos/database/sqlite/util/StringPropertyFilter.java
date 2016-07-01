@@ -29,7 +29,7 @@ public class StringPropertyFilter extends BasePropertyFilter {
             case STARTS_WITH:
                 return ((String) operand).startsWith(mOperand);
             case CONTAINS:
-                return ((String) operand).contains(mOperand);
+                return ((String) operand).toLowerCase().contains(mOperand.toLowerCase());
             case EQUAL:
                 return operand.equals(mOperand);
             case ENDS_WITH:

@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="contentPane" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="998" height="460"/>
+      <xy x="20" y="20" width="998" height="499"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -39,6 +39,7 @@
               <component id="29572" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
                 <constraints/>
                 <properties>
+                  <enabled value="false"/>
                   <text value="Delete"/>
                 </properties>
               </component>
@@ -88,58 +89,6 @@
               </model>
             </properties>
           </component>
-          <grid id="d7cf6" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-            <margin top="0" left="0" bottom="0" right="0"/>
-            <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="6" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <grid id="a029d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties/>
-                <border type="none"/>
-                <children>
-                  <component id="b288e" class="javax.swing.JLabel">
-                    <constraints/>
-                    <properties>
-                      <text value="Property Type"/>
-                    </properties>
-                  </component>
-                  <component id="459e9" class="javax.swing.JLabel" binding="propertyTypeText">
-                    <constraints/>
-                    <properties>
-                      <text value=""/>
-                    </properties>
-                  </component>
-                </children>
-              </grid>
-              <grid id="4955f" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties/>
-                <border type="none"/>
-                <children>
-                  <component id="d0cf6" class="javax.swing.JLabel">
-                    <constraints/>
-                    <properties>
-                      <text value="Listing Price:"/>
-                    </properties>
-                  </component>
-                  <component id="9cdd" class="javax.swing.JLabel" binding="listingPriceText">
-                    <constraints/>
-                    <properties>
-                      <text value=""/>
-                    </properties>
-                  </component>
-                </children>
-              </grid>
-            </children>
-          </grid>
           <grid id="e5ace" binding="propertyOutputPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="true" hgap="-1" vgap="0">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
@@ -175,6 +124,105 @@
                   <text value="Commission Slip"/>
                 </properties>
               </component>
+            </children>
+          </grid>
+          <grid id="b26e0" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="c2e39" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="5f59c" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Property Type:"/>
+                    </properties>
+                  </component>
+                  <component id="b12fe" class="javax.swing.JLabel" binding="propertyTypeText">
+                    <constraints/>
+                    <properties>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <vspacer id="ef40f">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </vspacer>
+              <grid id="d718f" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="3d439" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Listing Price:"/>
+                    </properties>
+                  </component>
+                  <component id="51ce6" class="javax.swing.JLabel" binding="listingPriceText">
+                    <constraints/>
+                    <properties>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="438f5" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="abcd" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Agent:"/>
+                    </properties>
+                  </component>
+                  <component id="afff3" class="javax.swing.JLabel" binding="agentLabel">
+                    <constraints/>
+                    <properties>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="e53aa" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="a3ece" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Customer:"/>
+                    </properties>
+                  </component>
+                  <component id="3e6e5" class="javax.swing.JLabel" binding="customerLabel">
+                    <constraints/>
+                    <properties>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
             </children>
           </grid>
         </children>

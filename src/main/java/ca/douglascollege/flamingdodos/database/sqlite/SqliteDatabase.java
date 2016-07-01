@@ -186,8 +186,13 @@ public class SqliteDatabase implements IDatabase {
 
                         do {
                             mCurrentItem = getItemMap(cursor, colNames);
-                            if (q.getFilter().evaluate(cursor.getRowId(), mCurrentItem)) {
-                                q.decrementLimit();
+                            if (q.getFilter() != null) {
+                                if (q.getFilter().evaluate(cursor.getRowId(), mCurrentItem)) {
+                                    q.decrementLimit();
+                                    cursor.next();
+                                    return true;
+                                }
+                            } else {
                                 cursor.next();
                                 return true;
                             }

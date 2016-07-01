@@ -13,6 +13,7 @@ public class Home extends BaseForm {
     private JButton viewPropertiesButton;
     private JButton revenueReportButton;
     private JPanel contentPane;
+    private JButton viewCustomersButton;
 
     public Home() {
         setContentPane(contentPane);
@@ -30,6 +31,12 @@ public class Home extends BaseForm {
         revenueReportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new RevenueReport().open();
+            }
+        });
+        viewCustomersButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Customers().open();
             }
         });
 
@@ -52,16 +59,19 @@ public class Home extends BaseForm {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(4, 1, new Insets(0, 0, 0, 0), -1, -1));
         viewPropertiesButton = new JButton();
         viewPropertiesButton.setText("View Properties");
         contentPane.add(viewPropertiesButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         revenueReportButton = new JButton();
         revenueReportButton.setText("Revenue Report");
-        contentPane.add(revenueReportButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(revenueReportButton, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         viewAgentsButton = new JButton();
         viewAgentsButton.setText("View Agents");
         contentPane.add(viewAgentsButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        viewCustomersButton = new JButton();
+        viewCustomersButton.setText("View Customers");
+        contentPane.add(viewCustomersButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

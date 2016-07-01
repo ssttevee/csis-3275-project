@@ -1,6 +1,6 @@
 package ca.douglascollege.flamingdodos.database.sqlite.annotations;
 
-import ca.douglascollege.flamingdodos.database.sqlite.enums.SqliteDataTypes;
+import ca.douglascollege.flamingdodos.database.sqlite.enums.SqliteDataType;
 import ca.douglascollege.flamingdodos.database.sqlite.models.SimpleSqliteModel;
 
 import java.lang.annotation.ElementType;
@@ -20,7 +20,7 @@ public @interface SqliteColumn {
     /**
      * The data type of the column
      */
-    SqliteDataTypes type();
+    SqliteDataType type();
 
     /**
      * The name of the column
